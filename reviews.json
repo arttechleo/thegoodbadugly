@@ -5,7 +5,7 @@
       "title": "testing ",
       "date": "September 23, 2025",
       "good": {
-        "content": "new blog",
+        "content": "new blog test",
         "media": null
       },
       "bad": {
@@ -35,6 +35,6 @@
       }
     }
   ],
-  "lastUpdated": "2025-09-24T02:38:33.462Z",
+  "lastUpdated": "2025-09-24T02:40:04.603Z",
   "totalReviews": 2
 }
