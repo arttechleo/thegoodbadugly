@@ -5,7 +5,7 @@
       "title": "the test of the website from mobile ",
       "date": "September 23, 2025",
       "good": {
-        "content": "Not working ",
+        "content": "Not working \nBut can see the website updates on mobile",
         "media": null
       },
       "bad": {
@@ -52,6 +52,6 @@
       }
     }
   ],
-  "lastUpdated": "2025-09-24T02:43:48.919Z",
+  "lastUpdated": "2025-09-24T02:44:31.642Z",
   "totalReviews": 3
 }
