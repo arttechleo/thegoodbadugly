@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} - The Good, The Bad, The Ugly</title>
+    <meta name="description" content="{{DESCRIPTION}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none; color: inherit;">
+                        <h1>The Good, The Bad, The Ugly</h1>
+                        <span class="tagline">VR/MR Experience Reviews</span>
+                    </a>
+                </div>
+                <div class="nav-right">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">●</span>
+                    </button>
+                    <div class="nav-links">
+                        <a href="index.html" class="nav-link">Home</a>
+                        <a href="#" class="nav-link" id="about-link">About</a>
+                        <a href="#" class="nav-link" id="contact-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="breadcrumb">
+            <a href="index.html">← Back to All Reviews</a>
+        </div>
+
+        <article class="single-post">
+            <div class="post-header">
+                <h1 class="post-title">{{TITLE}}</h1>
+                <p class="post-date">Published on {{DATE}}</p>
+            </div>
+            
+            <div class="review-section good">
+                <h2 class="section-title">The Good</h2>
+                <div class="section-content">
+                    <div class="section-text">{{GOOD_CONTENT}}</div>
+                    {{GOOD_MEDIA}}
+                </div>
+            </div>
+            
+            <div class="review-section bad">
+                <h2 class="section-title">The Bad</h2>
+                <div class="section-content">
+                    <div class="section-text">{{BAD_CONTENT}}</div>
+                    {{BAD_MEDIA}}
+                </div>
+            </div>
+            
+            <div class="review-section ugly">
+                <h2 class="section-title">The Ugly</h2>
+                <div class="section-content">
+                    <div class="section-text">{{UGLY_CONTENT}}</div>
+                    {{UGLY_MEDIA}}
+                </div>
+            </div>
+        </article>
+
+        <div class="navigation-links">
+            <a href="index.html" class="nav-button">← All Reviews</a>
+            {{PREV_NEXT_LINKS}}
+        </div>
+    </main>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>About</h3>
+                <button class="close-about" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Welcome to "The Good, The Bad, The Ugly" - a blog dedicated to honest, comprehensive reviews of Virtual and Mixed Reality experiences.</p>
+                
+                <p>Here, we break down every VR/MR project into three critical categories:</p>
+                
+                <ul>
+                    <li><strong>The Good:</strong> What works well and impresses</li>
+                    <li><strong>The Bad:</strong> What needs improvement</li>
+                    <li><strong>The Ugly:</strong> What's broken or concerning</li>
+                </ul>
+                
+                <p>Our goal is to provide balanced, detailed insights to help you make informed decisions about VR/MR experiences, whether you're a developer, enthusiast, or curious newcomer to the immersive technology space.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Contact</h3>
+                <button class="close-contact" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Have a VR/MR project you'd like us to review? Want to discuss our thoughts on a particular experience? We'd love to hear from you!</p>
+                
+                <div class="contact-info">
+                    <p><strong>Email:</strong> reviews@goodbadugly-vr.com</p>
+                    <p><strong>Twitter:</strong> @GoodBadUglyVR</p>
+                    <p><strong>Discord:</strong> GoodBadUgly#1234</p>
+                </div>
+                
+                <p>For review requests, please include:</p>
+                <ul>
+                    <li>Project name and platform</li>
+                    <li>Brief description</li>
+                    <li>Access method (store link, review code, etc.)</li>
+                </ul>
+                
+                <p>We aim to respond within 2-3 business days.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 The Good, The Bad, The Ugly</p>
+    </footer>
+
+    <script>
+        // Theme management
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.getElementById('theme-toggle');
+                this.aboutModal = document.getElementById('about-modal');
+                this.contactModal = document.getElementById('contact-modal');
+                this.closeAboutBtn = document.querySelector('.close-about');
+                this.closeContactBtn = document.querySelector('.close-contact');
+                this.aboutLink = document.getElementById('about-link');
+                this.contactLink = document.getElementById('contact-link');
+
+                this.initializeTheme();
+                this.initializeEventListeners();
+            }
+
+            initializeTheme() {
+                const savedTheme = localStorage.getItem('vrBlogTheme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+                
+                document.documentElement.setAttribute('data-theme', theme);
+                this.updateThemeIcon(theme);
+            }
+
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('vrBlogTheme', newTheme);
+                this.updateThemeIcon(newTheme);
+            }
+
+            updateThemeIcon(theme) {
+                const icon = document.querySelector('.theme-icon');
+                if (icon) {
+                    icon.textContent = theme === 'dark' ? '○' : '●';
+                }
+            }
+
+            initializeEventListeners() {
+                if (this.themeToggle) {
+                    this.themeToggle.addEventListener('click', () => this.toggleTheme());
+                }
+
+                if (this.aboutLink) {
+                    this.aboutLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.aboutModal.style.display = 'block';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                if (this.contactLink) {
+                    this.contactLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.contactModal.style.display = 'block';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                if (this.closeAboutBtn) {
+                    this.closeAboutBtn.addEventListener('click', () => {
+                        this.aboutModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    });
+                }
+
+                if (this.closeContactBtn) {
+                    this.closeContactBtn.addEventListener('click', () => {
+                        this.contactModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    });
+                }
+
+                // Close modals when clicking outside
+                window.addEventListener('click', (e) => {
+                    if (e.target === this.aboutModal) {
+                        this.aboutModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                    if (e.target === this.contactModal) {
+                        this.contactModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+
+                // Close modals with Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (this.aboutModal.style.display === 'block') {
+                            this.aboutModal.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                        if (this.contactModal.style.display === 'block') {
+                            this.contactModal.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new ThemeManager();
+        });
+    </script>
+</body>
+</html>

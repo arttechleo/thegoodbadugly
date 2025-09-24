@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Good, The Bad, The Ugly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>The Good, The Bad, The Ugly</h1>
+                    <span class="tagline">VR/MR Experience Reviews</span>
+                </div>
+                <div class="nav-right">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">●</span>
+                    </button>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link" id="about-link">About</a>
+                        <a href="#" class="nav-link" id="contact-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <h2>Exploring Virtual & Mixed Reality</h2>
+            <p>In-depth reviews and critiques of the latest VR/MR experiences</p>
+        </section>
+
+        <section class="blog-posts" id="blog-posts">
+            <!-- Blog posts will be dynamically inserted here -->
+        </section>
+
+        <div class="add-post-container" id="admin-controls" style="display: none;">
+            <button id="add-post-btn" class="add-post-btn">Add New Review</button>
+            <button id="clear-posts-btn" class="clear-posts-btn">Clear All Reviews</button>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+
+        <div class="admin-login-container" id="admin-login" style="display: block;">
+            <button id="admin-login-btn" class="admin-login-btn">Admin Login</button>
+        </div>
+    </main>
+
+    <!-- Modal for adding new posts -->
+    <div id="post-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Review</h3>
+                <button class="close" aria-label="Close modal">×</button>
+            </div>
+            <form id="post-form">
+                <div class="form-group">
+                    <label for="title">Project Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                
+                <div class="form-section">
+                    <h4>The Good</h4>
+                    <textarea id="good-content" name="good-content" rows="4" placeholder="What works well..." required></textarea>
+                    <div class="media-controls">
+                        <select id="good-media-type" name="good-media-type">
+                            <option value="none">No Media</option>
+                            <option value="image">Image</option>
+                            <option value="youtube">YouTube Video</option>
+                        </select>
+                        <input type="url" id="good-media" name="good-media" placeholder="Enter URL" class="media-input">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4>The Bad</h4>
+                    <textarea id="bad-content" name="bad-content" rows="4" placeholder="What needs improvement..." required></textarea>
+                    <div class="media-controls">
+                        <select id="bad-media-type" name="bad-media-type">
+                            <option value="none">No Media</option>
+                            <option value="image">Image</option>
+                            <option value="youtube">YouTube Video</option>
+                        </select>
+                        <input type="url" id="bad-media" name="bad-media" placeholder="Enter URL" class="media-input">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4>The Ugly</h4>
+                    <textarea id="ugly-content" name="ugly-content" rows="4" placeholder="What's broken or concerning..." required></textarea>
+                    <div class="media-controls">
+                        <select id="ugly-media-type" name="ugly-media-type">
+                            <option value="none">No Media</option>
+                            <option value="image">Image</option>
+                            <option value="youtube">YouTube Video</option>
+                        </select>
+                        <input type="url" id="ugly-media" name="ugly-media" placeholder="Enter URL" class="media-input">
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Publish Review</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Admin Login</h3>
+                <button class="close-admin-login" aria-label="Close modal">×</button>
+            </div>
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="github-token">GitHub Personal Access Token:</label>
+                    <input type="password" id="github-token" name="github-token" required 
+                           placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                        Create at: GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+                    </small>
+                </div>
+                <button type="submit" class="submit-btn">Login with GitHub</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>About</h3>
+                <button class="close-about" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Welcome to "The Good, The Bad, The Ugly" - a blog dedicated to honest, comprehensive reviews of Virtual and Mixed Reality experiences.</p>
+                
+                <p>Here, we break down every VR/MR project into three critical categories:</p>
+                
+                <ul>
+                    <li><strong>The Good:</strong> What works well and impresses</li>
+                    <li><strong>The Bad:</strong> What needs improvement</li>
+                    <li><strong>The Ugly:</strong> What's broken or concerning</li>
+                </ul>
+                
+                <p>Our goal is to provide balanced, detailed insights to help you make informed decisions about VR/MR experiences, whether you're a developer, enthusiast, or curious newcomer to the immersive technology space.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Contact</h3>
+                <button class="close-contact" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Have a VR/MR project you'd like us to review? Want to discuss our thoughts on a particular experience? We'd love to hear from you!</p>
+                
+                <div class="contact-info">
+                    <p><strong>Email:</strong> reviews@goodbadugly-vr.com</p>
+                    <p><strong>Twitter:</strong> @GoodBadUglyVR</p>
+                    <p><strong>Discord:</strong> GoodBadUgly#1234</p>
+                </div>
+                
+                <p>For review requests, please include:</p>
+                <ul>
+                    <li>Project name and platform</li>
+                    <li>Brief description</li>
+                    <li>Access method (store link, review code, etc.)</li>
+                </ul>
+                
+                <p>We aim to respond within 2-3 business days.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 The Good, The Bad, The Ugly</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
