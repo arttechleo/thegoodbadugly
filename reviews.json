@@ -1,3 +1,23 @@
 {
-  "reviews": []
+  "reviews": [
+    {
+      "id": 1758679815289,
+      "title": "Testing the blog ",
+      "date": "September 23, 2025",
+      "good": {
+        "content": "Might work",
+        "media": null
+      },
+      "bad": {
+        "content": "Might NOT work",
+        "media": null
+      },
+      "ugly": {
+        "content": "Fails to publish on mobile ",
+        "media": null
+      }
+    }
+  ],
+  "lastUpdated": "2025-09-24T02:10:16.023Z",
+  "totalReviews": 1
 }
