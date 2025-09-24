@@ -1,23 +1,6 @@
 {
   "reviews": [
     {
-      "id": 1758680585460,
-      "title": "Getting on page doesn't work ",
-      "date": "September 23, 2025",
-      "good": {
-        "content": "Test",
-        "media": null
-      },
-      "bad": {
-        "content": "I am learning a lot about blogging ",
-        "media": null
-      },
-      "ugly": {
-        "content": "Will this work? ",
-        "media": null
-      }
-    },
-    {
       "id": 1758679815289,
       "title": "Testing the blog ",
       "date": "September 23, 2025",
@@ -35,6 +18,6 @@
       }
     }
   ],
-  "lastUpdated": "2025-09-24T02:23:06.176Z",
-  "totalReviews": 2
+  "lastUpdated": "2025-09-24T02:36:17.302Z",
+  "totalReviews": 1
 }
