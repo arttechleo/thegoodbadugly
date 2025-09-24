@@ -1,19 +1,36 @@
 {
   "reviews": [
     {
-      "id": 1758680585460,
-      "title": "Getting on page doesn't work ",
+      "id": 1758681827544,
+      "title": "the test of the website from mobile ",
       "date": "September 23, 2025",
       "good": {
-        "content": "Test",
+        "content": "Not working \nBut can see the website updates on mobile",
         "media": null
       },
       "bad": {
-        "content": "I am learning a lot about blogging ",
+        "content": "can't post new posts from phone",
         "media": null
       },
       "ugly": {
-        "content": "Will this work? ",
+        "content": "buuuuuuuuugs",
+        "media": null
+      }
+    },
+    {
+      "id": 1758681512765,
+      "title": "testing ",
+      "date": "September 23, 2025",
+      "good": {
+        "content": "new blog test",
+        "media": null
+      },
+      "bad": {
+        "content": "not sure if it works",
+        "media": null
+      },
+      "ugly": {
+        "content": "there are issues with posting and deleting ",
         "media": null
       }
     },
@@ -35,6 +52,6 @@
       }
     }
   ],
-  "lastUpdated": "2025-09-24T02:23:06.176Z",
-  "totalReviews": 2
+  "lastUpdated": "2025-09-24T02:44:31.642Z",
+  "totalReviews": 3
 }
