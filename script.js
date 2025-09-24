@@ -9,12 +9,14 @@ class VRBlog {
 
         this.posts = [];
         this.isAdminLoggedIn = this.checkAdminStatus();
+        this.editingPostId = null; // Track which post is being edited
         
         // Modal elements
         this.modal = document.getElementById('post-modal');
         this.aboutModal = document.getElementById('about-modal');
         this.contactModal = document.getElementById('contact-modal');
         this.adminLoginModal = document.getElementById('admin-login-modal');
+        this.postDetailModal = document.getElementById('post-detail-modal');
         
         // Button elements
         this.addPostBtn = document.getElementById('add-post-btn');
@@ -27,6 +29,7 @@ class VRBlog {
         this.closeAboutBtn = document.querySelector('.close-about');
         this.closeContactBtn = document.querySelector('.close-contact');
         this.closeAdminLoginBtn = document.querySelector('.close-admin-login');
+        this.closePostDetailBtn = document.querySelector('.close-post-detail');
         
         // Form elements
         this.postForm = document.getElementById('post-form');
@@ -95,6 +98,10 @@ class VRBlog {
             this.closeAdminLoginBtn.addEventListener('click', () => this.closeAdminLoginModal());
         }
         
+        if (this.closePostDetailBtn) {
+            this.closePostDetailBtn.addEventListener('click', () => this.closePostDetailModal());
+        }
+        
         // Form submissions
         if (this.postForm) {
             this.postForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
@@ -137,6 +144,9 @@ class VRBlog {
             if (e.target === this.adminLoginModal) {
                 this.closeAdminLoginModal();
             }
+            if (e.target === this.postDetailModal) {
+                this.closePostDetailModal();
+            }
         });
 
         // Keyboard events
@@ -153,6 +163,9 @@ class VRBlog {
                 }
                 if (this.adminLoginModal && this.adminLoginModal.style.display === 'block') {
                     this.closeAdminLoginModal();
+                }
+                if (this.postDetailModal && this.postDetailModal.style.display === 'block') {
+                    this.closePostDetailModal();
                 }
             }
         });
@@ -207,7 +220,30 @@ class VRBlog {
         });
     }
 
-    openModal() {
+    openModal(editPost = null) {
+        this.editingPostId = editPost ? editPost.id : null;
+        
+        if (editPost) {
+            // Pre-fill form for editing
+            document.getElementById('title').value = editPost.title;
+            document.getElementById('good-content').value = editPost.good.content;
+            document.getElementById('bad-content').value = editPost.bad.content;
+            document.getElementById('ugly-content').value = editPost.ugly.content;
+            
+            // Set media types and URLs
+            this.setMediaFields('good', editPost.good.media);
+            this.setMediaFields('bad', editPost.bad.media);
+            this.setMediaFields('ugly', editPost.ugly.media);
+            
+            // Update modal title and button
+            document.querySelector('#post-modal h3').textContent = 'Edit Review';
+            document.querySelector('#post-form .submit-btn').textContent = 'Update Review';
+        } else {
+            // Reset for new post
+            document.querySelector('#post-modal h3').textContent = 'Add New Review';
+            document.querySelector('#post-form .submit-btn').textContent = 'Publish Review';
+        }
+
         this.modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         setTimeout(() => {
@@ -215,10 +251,33 @@ class VRBlog {
         }, 100);
     }
 
+    setMediaFields(section, media) {
+        const typeSelect = document.getElementById(`${section}-media-type`);
+        const mediaInput = document.getElementById(`${section}-media`);
+        
+        if (media) {
+            typeSelect.value = media.type;
+            mediaInput.style.display = 'block';
+            
+            if (media.type === 'youtube') {
+                // Convert embed URL back to regular YouTube URL for editing
+                const videoId = media.url.split('/embed/')[1];
+                mediaInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+            } else {
+                mediaInput.value = media.url;
+            }
+        } else {
+            typeSelect.value = 'none';
+            mediaInput.style.display = 'none';
+            mediaInput.value = '';
+        }
+    }
+
     closeModal() {
         this.modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         this.postForm.reset();
+        this.editingPostId = null;
         
         document.querySelectorAll('.media-input').forEach(input => {
             input.style.display = 'none';
@@ -257,6 +316,82 @@ class VRBlog {
         this.adminLoginModal.style.display = 'none';
         document.body.style.overflow = 'auto';
         this.adminLoginForm.reset();
+    }
+
+    openPostDetailModal(post) {
+        const detailBody = document.getElementById('post-detail-body');
+        if (detailBody) {
+            detailBody.innerHTML = `
+                <div class="post-header">
+                    <h2 class="post-title">${post.title}</h2>
+                    <p class="post-date">Published on ${post.date}</p>
+                    ${this.isAdminLoggedIn ? `
+                        <div class="admin-post-actions">
+                            <button onclick="vrBlog.editPost(${post.id})" class="edit-post-btn">Edit Post</button>
+                            <button onclick="vrBlog.deletePost(${post.id})" class="delete-post-btn">Delete Post</button>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="review-section">
+                    <h3 class="section-title">The Good</h3>
+                    <div class="section-content">
+                        <div class="section-text">${post.good.content}</div>
+                        ${post.good.media ? `<div class="section-media">${this.renderMedia(post.good.media)}</div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="review-section">
+                    <h3 class="section-title">The Bad</h3>
+                    <div class="section-content">
+                        <div class="section-text">${post.bad.content}</div>
+                        ${post.bad.media ? `<div class="section-media">${this.renderMedia(post.bad.media)}</div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="review-section">
+                    <h3 class="section-title">The Ugly</h3>
+                    <div class="section-content">
+                        <div class="section-text">${post.ugly.content}</div>
+                        ${post.ugly.media ? `<div class="section-media">${this.renderMedia(post.ugly.media)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('detail-title').textContent = post.title;
+        this.postDetailModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closePostDetailModal() {
+        this.postDetailModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    editPost(postId) {
+        const post = this.posts.find(p => p.id === postId);
+        if (post) {
+            this.closePostDetailModal();
+            this.openModal(post);
+        }
+    }
+
+    async deletePost(postId) {
+        if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            this.posts = this.posts.filter(post => post.id !== postId);
+            await this.updateGitHubRepo();
+            this.closePostDetailModal();
+            this.renderPosts();
+            alert('Review deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('Error deleting review. Please try again.');
+        }
     }
 
     handleAdminLogin(e) {
@@ -336,14 +471,16 @@ class VRBlog {
         
         const submitBtn = e.target.querySelector('.submit-btn');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Publishing...';
+        const isEditing = this.editingPostId !== null;
+        
+        submitBtn.textContent = isEditing ? 'Updating...' : 'Publishing...';
         submitBtn.disabled = true;
         
         try {
             const formData = new FormData(this.postForm);
             
-            const post = {
-                id: Date.now(),
+            const postData = {
+                id: this.editingPostId || Date.now(),
                 title: formData.get('title'),
                 date: new Date().toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -364,8 +501,16 @@ class VRBlog {
                 }
             };
 
-            // Add to local posts array
-            this.posts.unshift(post);
+            if (isEditing) {
+                // Update existing post
+                const postIndex = this.posts.findIndex(p => p.id === this.editingPostId);
+                if (postIndex !== -1) {
+                    this.posts[postIndex] = postData;
+                }
+            } else {
+                // Add new post
+                this.posts.unshift(postData);
+            }
             
             // Update GitHub repository
             await this.updateGitHubRepo();
@@ -374,14 +519,16 @@ class VRBlog {
             this.renderPosts();
             this.closeModal();
             
-            alert('Review published successfully! Your blog is now updated.');
+            alert(isEditing ? 'Review updated successfully!' : 'Review published successfully!');
             
         } catch (error) {
-            console.error('Error publishing review:', error);
-            alert('Error publishing review. Please try again.');
+            console.error('Error saving review:', error);
+            alert('Error saving review. Please try again.');
             
-            // Remove the post from local array if GitHub update failed
-            this.posts.shift();
+            // Revert changes if it was a new post
+            if (!isEditing) {
+                this.posts.shift();
+            }
         } finally {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
@@ -430,7 +577,7 @@ class VRBlog {
         
         // Prepare the update payload
         const payload = {
-            message: `Add new review: ${this.posts[0].title}`,
+            message: this.posts.length > 0 ? `Update reviews: ${this.posts[0].title}` : 'Clear all reviews',
             content: content
         };
         
@@ -539,16 +686,9 @@ class VRBlog {
         article.className = 'blog-post';
         article.style.cursor = 'pointer';
         
-        // Create slug for URL
-        const slug = post.title
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        
-        // Add click event to navigate to individual page
+        // Add click event to open detailed modal
         article.addEventListener('click', () => {
-            window.location.href = `reviews/${slug}.html`;
+            this.openPostDetailModal(post);
         });
         
         // Truncate content for preview
@@ -629,6 +769,9 @@ class VRBlog {
     }
 }
 
+// Create global instance for button callbacks
+let vrBlog;
+
 document.addEventListener('DOMContentLoaded', () => {
-    new VRBlog();
+    vrBlog = new VRBlog();
 });
