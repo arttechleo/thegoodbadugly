@@ -2,14 +2,14 @@
   "reviews": [
     {
       "id": 1758681827544,
-      "title": "the test of the website from mobile ",
+      "title": "the test of the website from mobile",
       "date": "September 23, 2025",
       "good": {
         "content": "Not working \nBut can see the website updates on mobile",
         "media": null
       },
       "bad": {
-        "content": "can't post new posts from phone",
+        "content": "can't post new posts from phone\n\nTesting the mobile version editing",
         "media": null
       },
       "ugly": {
@@ -52,6 +52,6 @@
       }
     }
   ],
-  "lastUpdated": "2025-09-24T02:44:31.642Z",
+  "lastUpdated": "2025-09-24T02:51:47.255Z",
   "totalReviews": 3
 }
