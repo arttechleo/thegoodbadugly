@@ -1,14 +1,14 @@
 class VRBlog {
-    constructor() {
-        this.posts = [];
-        this.isAdminLoggedIn = this.checkAdminStatus();
-        
+    constructor() {        
         // GitHub configuration - UPDATE THESE WITH YOUR DETAILS
         this.githubConfig = {
             owner: 'arttechleo',        // Replace with your GitHub username
             repo: 'thegoodbadugly',         // Replace with your repository name
             token: localStorage.getItem('githubToken') || null  // GitHub token will be stored securely
         };
+
+        this.posts = [];
+        this.isAdminLoggedIn = this.checkAdminStatus();
         
         // Modal elements
         this.modal = document.getElementById('post-modal');
