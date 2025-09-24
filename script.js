@@ -1,10 +1,10 @@
 class VRBlog {
-    constructor() {        
-        // GitHub configuration - UPDATE THESE WITH YOUR DETAILS
+    constructor() {
+        // GitHub configuration - MUST BE FIRST
         this.githubConfig = {
-            owner: 'arttechleo',        // Replace with your GitHub username
-            repo: 'thegoodbadugly',         // Replace with your repository name
-            token: localStorage.getItem('githubToken') || null  // GitHub token will be stored securely
+            owner: 'arttechleo',
+            repo: 'thegoodbadugly',
+            token: localStorage.getItem('githubToken') || null
         };
 
         this.posts = [];
@@ -47,6 +47,17 @@ class VRBlog {
         this.setupMediaTypeSelectors();
         this.updateAdminUI();
         this.loadPosts();
+    }
+
+    checkAdminStatus() {
+        if (!this.githubConfig) {
+            return false;
+        }
+        const hasValidToken = localStorage.getItem('githubToken') && localStorage.getItem('vrBlogAdminStatus') === 'true';
+        if (hasValidToken) {
+            this.githubConfig.token = localStorage.getItem('githubToken');
+        }
+        return hasValidToken;
     }
 
     initializeEventListeners() {
@@ -303,14 +314,6 @@ class VRBlog {
         localStorage.removeItem('githubToken');
         this.githubConfig.token = null;
         this.updateAdminUI();
-    }
-
-    checkAdminStatus() {
-        const hasValidToken = localStorage.getItem('githubToken') && localStorage.getItem('vrBlogAdminStatus') === 'true';
-        if (hasValidToken) {
-            this.githubConfig.token = localStorage.getItem('githubToken');
-        }
-        return hasValidToken;
     }
 
     updateAdminUI() {
@@ -605,23 +608,16 @@ class VRBlog {
 
     async loadPosts() {
         try {
-            // Try to load from GitHub first
-            if (this.githubConfig.owner !== 'YOUR_GITHUB_USERNAME' && this.githubConfig.repo !== 'YOUR_REPOSITORY_NAME') {
-                const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`);
-                
-                if (response.ok) {
-                    const fileData = await response.json();
-                    const content = atob(fileData.content);
-                    const data = JSON.parse(content);
-                    this.posts = data.reviews || [];
-                } else {
-                    console.log('No reviews.json found in repository, starting with empty posts');
-                    this.posts = [];
-                }
+            const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`);
+            
+            if (response.ok) {
+                const fileData = await response.json();
+                const content = atob(fileData.content);
+                const data = JSON.parse(content);
+                this.posts = data.reviews || [];
             } else {
-                // Fallback to local storage if GitHub config not set
-                const saved = localStorage.getItem('vrBlogPosts');
-                this.posts = saved ? JSON.parse(saved) : [];
+                console.log('No reviews.json found in repository, starting with empty posts');
+                this.posts = [];
             }
         } catch (error) {
             console.log('Could not load posts from GitHub, using local storage:', error);
