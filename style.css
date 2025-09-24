@@ -588,8 +588,69 @@ footer {
     }
 
     .modal-content {
-        margin: 10% auto;
+        margin: 5% auto;
         width: 95%;
+        max-height: 95vh;
+    }
+
+    /* Mobile-specific modal improvements */
+    .modal {
+        padding: 1rem 0;
+    }
+
+    #post-form {
+        padding: 1rem;
+    }
+
+    .form-group, .form-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group textarea,
+    .form-section textarea {
+        min-height: 120px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 1rem;
+    }
+
+    .form-group input,
+    .form-section input,
+    .form-section select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .submit-btn {
+        font-size: 16px;
+        padding: 1.2rem 2rem;
+        border-radius: 8px;
+        -webkit-appearance: none; /* Remove iOS styling */
+    }
+
+    /* Improve touch targets */
+    .add-post-btn, .clear-posts-btn, .logout-btn, .admin-login-btn {
+        min-height: 44px;
+        padding: 1rem 1.5rem;
+        font-size: 16px;
+        border-radius: 8px;
+        -webkit-appearance: none;
+    }
+
+    .theme-toggle {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .close, .close-about, .close-contact, .close-admin-login, .close-post-detail {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 1.8rem;
+    }
+
+    /* Prevent viewport zoom on input focus */
+    input, textarea, select {
+        font-size: 16px !important;
     }
 }
 

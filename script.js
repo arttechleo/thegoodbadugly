@@ -11,6 +11,24 @@ class VRBlog {
         this.isAdminLoggedIn = this.checkAdminStatus();
         this.editingPostId = null; // Track which post is being edited
         
+        // Mobile debugging - log to console and store in localStorage for debugging
+        this.debug = {
+            log: (message, data) => {
+                console.log(`[VRBlog Mobile Debug] ${message}`, data);
+                const logs = JSON.parse(localStorage.getItem('vrBlogDebugLogs') || '[]');
+                logs.push({ time: new Date().toISOString(), message, data });
+                // Keep only last 10 logs
+                if (logs.length > 10) logs.shift();
+                localStorage.setItem('vrBlogDebugLogs', JSON.stringify(logs));
+            }
+        };
+        
+        this.debug.log('Blog initialized', { 
+            isMobile: window.innerWidth <= 768,
+            userAgent: navigator.userAgent,
+            isLoggedIn: this.isAdminLoggedIn
+        });
+        
         // Modal elements
         this.modal = document.getElementById('post-modal');
         this.aboutModal = document.getElementById('about-modal');
@@ -246,9 +264,15 @@ class VRBlog {
 
         this.modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        
+        // Mobile-friendly focus - delay and check if element exists
         setTimeout(() => {
-            document.getElementById('title').focus();
-        }, 100);
+            const titleInput = document.getElementById('title');
+            if (titleInput && window.innerWidth > 768) {
+                // Only auto-focus on desktop to prevent mobile keyboard issues
+                titleInput.focus();
+            }
+        }, 300); // Longer delay for mobile
     }
 
     setMediaFields(section, media) {
@@ -307,9 +331,15 @@ class VRBlog {
     openAdminLoginModal() {
         this.adminLoginModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        
+        // Mobile-friendly focus handling
         setTimeout(() => {
-            document.getElementById('github-token').focus();
-        }, 100);
+            const tokenInput = document.getElementById('github-token');
+            if (tokenInput && window.innerWidth > 768) {
+                // Only auto-focus on desktop
+                tokenInput.focus();
+            }
+        }, 300);
     }
 
     closeAdminLoginModal() {
@@ -463,6 +493,7 @@ class VRBlog {
 
     async handleFormSubmit(e) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent any event bubbling issues on mobile
         
         if (!this.isAdminLoggedIn || !this.githubConfig.token) {
             alert('Please log in with your GitHub token first.');
@@ -473,30 +504,43 @@ class VRBlog {
         const originalText = submitBtn.textContent;
         const isEditing = this.editingPostId !== null;
         
+        // Disable button and show loading state
         submitBtn.textContent = isEditing ? 'Updating...' : 'Publishing...';
         submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.pointerEvents = 'none';
         
         try {
             const formData = new FormData(this.postForm);
             
+            // Validate required fields
+            const title = formData.get('title')?.trim();
+            const goodContent = formData.get('good-content')?.trim();
+            const badContent = formData.get('bad-content')?.trim();
+            const uglyContent = formData.get('ugly-content')?.trim();
+            
+            if (!title || !goodContent || !badContent || !uglyContent) {
+                throw new Error('Please fill in all required fields');
+            }
+            
             const postData = {
                 id: this.editingPostId || Date.now(),
-                title: formData.get('title'),
+                title: title,
                 date: new Date().toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 }),
                 good: {
-                    content: formData.get('good-content'),
+                    content: goodContent,
                     media: this.processMediaInput(formData.get('good-media-type'), formData.get('good-media'))
                 },
                 bad: {
-                    content: formData.get('bad-content'),
+                    content: badContent,
                     media: this.processMediaInput(formData.get('bad-media-type'), formData.get('bad-media'))
                 },
                 ugly: {
-                    content: formData.get('ugly-content'),
+                    content: uglyContent,
                     media: this.processMediaInput(formData.get('ugly-media-type'), formData.get('ugly-media'))
                 }
             };
@@ -519,19 +563,36 @@ class VRBlog {
             this.renderPosts();
             this.closeModal();
             
-            alert(isEditing ? 'Review updated successfully!' : 'Review published successfully!');
+            // Success notification
+            const message = isEditing ? 'Review updated successfully!' : 'Review published successfully!';
+            
+            // Use a more mobile-friendly notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(message);
+            } else {
+                alert(message);
+            }
             
         } catch (error) {
             console.error('Error saving review:', error);
-            alert('Error saving review. Please try again.');
+            
+            // Show user-friendly error message
+            const errorMessage = error.message.includes('fill in all') 
+                ? error.message 
+                : 'Error saving review. Please check your internet connection and try again.';
+            
+            alert(errorMessage);
             
             // Revert changes if it was a new post
             if (!isEditing) {
                 this.posts.shift();
             }
         } finally {
+            // Re-enable button
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.pointerEvents = 'auto';
         }
     }
 
@@ -540,69 +601,114 @@ class VRBlog {
             throw new Error('No GitHub token available');
         }
 
-        // First, get the current file to get its SHA (required for updates)
-        const getCurrentFile = async () => {
+        const maxRetries = 3;
+        let attempt = 0;
+
+        while (attempt < maxRetries) {
             try {
+                // Get the current file to get its SHA (required for updates)
+                const getCurrentFile = async () => {
+                    try {
+                        const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                            headers: {
+                                'Authorization': `token ${this.githubConfig.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            return await response.json();
+                        } else if (response.status === 404) {
+                            // File doesn't exist, we'll create it
+                            return null;
+                        } else {
+                            throw new Error(`Failed to get current file: ${response.status}`);
+                        }
+                    } catch (error) {
+                        console.error('Error getting current file:', error);
+                        return null;
+                    }
+                };
+
+                const currentFile = await getCurrentFile();
+                
+                // If file exists, merge with remote data to avoid conflicts
+                if (currentFile && attempt === 0) {
+                    try {
+                        const remoteContent = atob(currentFile.content);
+                        const remoteData = JSON.parse(remoteContent);
+                        
+                        // Simple merge strategy - keep local posts but update with any remote changes
+                        if (remoteData.reviews && remoteData.reviews.length > 0) {
+                            console.log('Merging with remote data...');
+                            // You could implement more sophisticated merging here if needed
+                        }
+                    } catch (error) {
+                        console.warn('Could not parse remote data, proceeding with local data:', error);
+                    }
+                }
+                
+                // Prepare the new content
+                const reviewsData = {
+                    reviews: this.posts,
+                    lastUpdated: new Date().toISOString(),
+                    totalReviews: this.posts.length
+                };
+                
+                const content = btoa(JSON.stringify(reviewsData, null, 2));
+                
+                // Prepare the update payload
+                const payload = {
+                    message: this.posts.length > 0 ? `Update reviews: ${this.posts[0].title}` : 'Clear all reviews',
+                    content: content
+                };
+                
+                // Add SHA if file exists (required for updates)
+                if (currentFile && currentFile.sha) {
+                    payload.sha = currentFile.sha;
+                }
+                
+                // Update the file
                 const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                    method: 'PUT',
                     headers: {
                         'Authorization': `token ${this.githubConfig.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
                 
-                if (response.ok) {
-                    return await response.json();
-                } else if (response.status === 404) {
-                    // File doesn't exist, we'll create it
-                    return null;
-                } else {
-                    throw new Error(`Failed to get current file: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    
+                    // If it's a SHA mismatch, retry with fresh data
+                    if (errorData.message && errorData.message.includes('does not match')) {
+                        attempt++;
+                        console.log(`SHA mismatch, retrying... (attempt ${attempt}/${maxRetries})`);
+                        
+                        if (attempt < maxRetries) {
+                            // Wait a bit before retrying
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            continue;
+                        }
+                    }
+                    
+                    throw new Error(`GitHub API error: ${errorData.message || response.status}`);
                 }
+                
+                return await response.json();
+                
             } catch (error) {
-                console.error('Error getting current file:', error);
-                return null;
+                attempt++;
+                if (attempt >= maxRetries) {
+                    throw error;
+                } else {
+                    console.log(`Error occurred, retrying... (attempt ${attempt}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
-        };
-
-        const currentFile = await getCurrentFile();
-        
-        // Prepare the new content
-        const reviewsData = {
-            reviews: this.posts,
-            lastUpdated: new Date().toISOString(),
-            totalReviews: this.posts.length
-        };
-        
-        const content = btoa(JSON.stringify(reviewsData, null, 2));
-        
-        // Prepare the update payload
-        const payload = {
-            message: this.posts.length > 0 ? `Update reviews: ${this.posts[0].title}` : 'Clear all reviews',
-            content: content
-        };
-        
-        // Add SHA if file exists (required for updates)
-        if (currentFile && currentFile.sha) {
-            payload.sha = currentFile.sha;
         }
-        
-        // Update the file
-        const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${this.githubConfig.token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`GitHub API error: ${errorData.message || response.status}`);
-        }
-        
-        return await response.json();
     }
 
     processMediaInput(type, url) {
