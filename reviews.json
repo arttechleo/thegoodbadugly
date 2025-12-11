@@ -56,25 +56,8 @@
         "content": "BbbbbbbbUgs",
         "media": null
       }
-    },
-    {
-      "id": 1758682658030,
-      "title": "Hello",
-      "date": "September 23, 2025",
-      "good": {
-        "content": "new post",
-        "media": null
-      },
-      "bad": {
-        "content": "Hope no bug",
-        "media": null
-      },
-      "ugly": {
-        "content": "Will not post",
-        "media": null
-      }
     }
   ],
-  "lastUpdated": "2025-12-11T17:22:49.797Z",
-  "totalReviews": 4
+  "lastUpdated": "2025-12-11T17:22:56.314Z",
+  "totalReviews": 3
 }
