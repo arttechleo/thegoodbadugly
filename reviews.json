@@ -73,25 +73,8 @@
         "content": "Will not post",
         "media": null
       }
-    },
-    {
-      "id": 1758681827544,
-      "title": "the test of the website from mobile",
-      "date": "September 23, 2025",
-      "good": {
-        "content": "Not working \nBut can see the website updates on mobile",
-        "media": null
-      },
-      "bad": {
-        "content": "can't post new posts from phone\n\nTesting the mobile version editing",
-        "media": null
-      },
-      "ugly": {
-        "content": "buuuuuuuuugs",
-        "media": null
-      }
     }
   ],
-  "lastUpdated": "2025-12-11T17:22:39.228Z",
-  "totalReviews": 5
+  "lastUpdated": "2025-12-11T17:22:49.797Z",
+  "totalReviews": 4
 }
