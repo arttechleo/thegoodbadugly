@@ -39,25 +39,8 @@
         "content": "The post features are at the bottom of the list",
         "media": null
       }
-    },
-    {
-      "id": 1758700582937,
-      "title": "I guess it kinda works",
-      "date": "September 24, 2025",
-      "good": {
-        "content": "Hope this will work",
-        "media": null
-      },
-      "bad": {
-        "content": "Not sure if I can post on mobile",
-        "media": null
-      },
-      "ugly": {
-        "content": "BbbbbbbbUgs",
-        "media": null
-      }
     }
   ],
-  "lastUpdated": "2025-12-11T17:22:56.314Z",
-  "totalReviews": 3
+  "lastUpdated": "2025-12-11T17:24:17.826Z",
+  "totalReviews": 2
 }
