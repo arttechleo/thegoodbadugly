@@ -1,0 +1,24 @@
+{
+  "name": "thegoodbadugly",
+  "version": "1.0.0",
+  "description": "VR/MR Experience Reviews Blog - The Good, The Bad, The Ugly",
+  "main": "generate-pages.js",
+  "scripts": {
+    "build:pages": "node generate-pages.js",
+    "generate": "node generate-pages.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blog",
+    "reviews",
+    "vr",
+    "mr",
+    "virtual-reality",
+    "mixed-reality"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
