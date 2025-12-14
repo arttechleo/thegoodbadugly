@@ -1,0 +1,34 @@
+# Sensitive files
+github_token_*/
+*.token
+token.txt
+token_screenshot.png
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+reviews/
+sitemap.xml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+

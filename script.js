@@ -443,7 +443,7 @@ class VRBlog {
         try {
             const response = await fetch('https://api.github.com/user', {
                 headers: {
-                    'Authorization': `token ${token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Accept': 'application/vnd.github.v3+json'
                 }
             });
@@ -611,7 +611,7 @@ class VRBlog {
                     try {
                         const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
                             headers: {
-                                'Authorization': `token ${this.githubConfig.token}`,
+                                'Authorization': `Bearer ${this.githubConfig.token}`,
                                 'Accept': 'application/vnd.github.v3+json'
                             }
                         });
@@ -672,7 +672,7 @@ class VRBlog {
                 const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${this.githubConfig.token}`,
+                        'Authorization': `Bearer ${this.githubConfig.token}`,
                         'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
