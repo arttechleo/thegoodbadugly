@@ -4,7 +4,8 @@ class VRBlog {
         this.githubConfig = {
             owner: 'arttechleo',
             repo: 'thegoodbadugly',
-            token: localStorage.getItem('githubToken') || null
+            token: localStorage.getItem('githubToken') || null,
+            postsBranch: 'posts' // Separate branch for storing posts
         };
 
         this.posts = [];
@@ -678,7 +679,7 @@ class VRBlog {
             // Update GitHub repository
             await this.updateGitHubRepo();
             
-            // Update UI
+            // Update UI immediately (don't reload - we already have the correct data)
             this.renderPosts();
             this.closeModal();
             
@@ -740,9 +741,11 @@ class VRBlog {
         while (attempt < maxRetries) {
             try {
                 // Get the current file to get its SHA (required for updates)
-                const getCurrentFile = async () => {
+                // Use posts branch for storing reviews, fallback to master if branch doesn't exist
+                const getCurrentFile = async (useBranch = true) => {
                     try {
-                        const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                        const branchParam = useBranch ? `?ref=${this.githubConfig.postsBranch}` : '';
+                        const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json${branchParam}`, {
                             headers: {
                                 'Authorization': `Bearer ${this.githubConfig.token}`,
                                 'Accept': 'application/vnd.github.v3+json'
@@ -752,6 +755,11 @@ class VRBlog {
                         if (response.ok) {
                             return await response.json();
                         } else if (response.status === 404) {
+                            // If branch doesn't exist and we tried branch, fallback to master
+                            if (useBranch) {
+                                console.log('Posts branch not found, trying master branch...');
+                                return await getCurrentFile(false);
+                            }
                             // File doesn't exist, we'll create it
                             return null;
                         } else {
@@ -759,22 +767,42 @@ class VRBlog {
                         }
                     } catch (error) {
                         console.error('Error getting current file:', error);
+                        // If branch fails, try master as fallback
+                        if (useBranch) {
+                            try {
+                                return await getCurrentFile(false);
+                            } catch (e) {
+                                return null;
+                            }
+                        }
                         return null;
                     }
                 };
 
                 const currentFile = await getCurrentFile();
                 
-                // If file exists, merge with remote data to avoid conflicts
+                // If file exists and we're on first attempt, merge remote posts with local changes
+                // This prevents losing posts that were added by other sessions/devices
                 if (currentFile && attempt === 0) {
                     try {
                         const remoteContent = atob(currentFile.content);
                         const remoteData = JSON.parse(remoteContent);
                         
-                        // Simple merge strategy - keep local posts but update with any remote changes
+                        // Merge strategy: combine remote and local posts, avoiding duplicates by ID
                         if (remoteData.reviews && remoteData.reviews.length > 0) {
-                            console.log('Merging with remote data...');
-                            // You could implement more sophisticated merging here if needed
+                            const localPostIds = new Set(this.posts.map(p => p.id));
+                            const mergedPosts = [...this.posts]; // Start with local posts (they have our latest changes)
+                            
+                            // Add remote posts that don't exist in our local array
+                            remoteData.reviews.forEach(remotePost => {
+                                if (!localPostIds.has(remotePost.id)) {
+                                    mergedPosts.push(remotePost);
+                                }
+                            });
+                            
+                            // Use merged posts for saving
+                            this.posts = mergedPosts;
+                            console.log(`Merged: ${mergedPosts.length} total posts (${remoteData.reviews.length} remote, ${localPostIds.size} local additions/changes)`);
                         }
                     } catch (error) {
                         console.warn('Could not parse remote data, proceeding with local data:', error);
@@ -791,9 +819,13 @@ class VRBlog {
                 const content = btoa(JSON.stringify(reviewsData, null, 2));
                 
                 // Prepare the update payload
+                // Determine which branch to use (prefer posts branch, fallback to master)
+                const targetBranch = currentFile ? (currentFile.url.includes(`ref=${this.githubConfig.postsBranch}`) ? this.githubConfig.postsBranch : 'master') : this.githubConfig.postsBranch;
+                
                 const payload = {
                     message: this.posts.length > 0 ? `Update reviews: ${this.posts[0].title}` : 'Clear all reviews',
-                    content: content
+                    content: content,
+                    branch: targetBranch // Specify branch in payload to create/update on that branch
                 };
                 
                 // Add SHA if file exists (required for updates)
@@ -801,8 +833,9 @@ class VRBlog {
                     payload.sha = currentFile.sha;
                 }
                 
-                // Update the file
-                const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                // Update the file on the target branch
+                const branchParam = `?ref=${targetBranch}`;
+                const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json${branchParam}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${this.githubConfig.token}`,
@@ -1010,21 +1043,41 @@ class VRBlog {
 
     async loadPosts() {
         try {
-            const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`);
+            // Try loading from posts branch first, fallback to master
+            let response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json?ref=${this.githubConfig.postsBranch}`, {
+                cache: 'no-cache',
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            // If posts branch doesn't exist, try master branch
+            if (response.status === 404) {
+                console.log('Posts branch not found, trying master branch...');
+                response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+            }
             
             if (response.ok) {
                 const fileData = await response.json();
                 const content = atob(fileData.content);
                 const data = JSON.parse(content);
                 this.posts = data.reviews || [];
-            } else {
+                console.log(`Loaded ${this.posts.length} posts from GitHub`);
+            } else if (response.status === 404) {
                 console.log('No reviews.json found in repository, starting with empty posts');
                 this.posts = [];
+            } else {
+                console.warn('Failed to load posts from GitHub:', response.status, response.statusText);
+                // Keep existing posts if load fails
             }
         } catch (error) {
-            console.log('Could not load posts from GitHub, using local storage:', error);
-            const saved = localStorage.getItem('vrBlogPosts');
-            this.posts = saved ? JSON.parse(saved) : [];
+            console.error('Could not load posts from GitHub:', error);
+            // Keep existing posts if load fails
         }
         
         this.renderPosts();
