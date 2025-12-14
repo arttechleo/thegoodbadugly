@@ -1129,10 +1129,31 @@ class VRBlog {
             
             if (response.ok) {
                 const fileData = await response.json();
-                const content = atob(fileData.content);
-                const data = JSON.parse(content);
-                this.posts = data.reviews || [];
-                console.log(`Loaded ${this.posts.length} posts from GitHub`);
+                
+                // Validate that we have content
+                if (!fileData.content) {
+                    console.warn('GitHub API response missing content field, starting with empty posts');
+                    this.posts = [];
+                } else {
+                    try {
+                        const content = atob(fileData.content.replace(/\s/g, '')); // Remove whitespace from base64
+                        
+                        // Validate that content is not empty
+                        if (!content || content.trim() === '') {
+                            console.warn('Decoded content is empty, starting with empty posts');
+                            this.posts = [];
+                        } else {
+                            const data = JSON.parse(content);
+                            this.posts = data.reviews || [];
+                            console.log(`Loaded ${this.posts.length} posts from GitHub (branch: ${response.url.includes('ref=posts') ? 'posts' : 'master'})`);
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing reviews.json content:', parseError);
+                        console.error('Content preview:', fileData.content ? fileData.content.substring(0, 100) : 'null');
+                        // If parsing fails, start with empty posts
+                        this.posts = [];
+                    }
+                }
             } else if (response.status === 404) {
                 console.log('No reviews.json found in repository, starting with empty posts');
                 this.posts = [];
