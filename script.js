@@ -36,11 +36,18 @@ class VRBlog {
         this.adminLoginModal = document.getElementById('admin-login-modal');
         this.postDetailModal = document.getElementById('post-detail-modal');
         
-        // Button elements
-        this.addPostBtn = document.getElementById('add-post-btn');
-        this.clearPostsBtn = document.getElementById('clear-posts-btn');
-        this.logoutBtn = document.getElementById('logout-btn');
-        this.adminLoginBtn = document.getElementById('admin-login-btn');
+        // Hamburger menu elements
+        this.hamburgerMenu = document.getElementById('hamburger-menu');
+        this.menuOverlay = document.getElementById('menu-overlay');
+        this.closeMenuBtn = document.getElementById('close-menu');
+        
+        // Menu items
+        this.menuAboutLink = document.getElementById('menu-about-link');
+        this.menuContactLink = document.getElementById('menu-contact-link');
+        this.menuAdminLogin = document.getElementById('menu-admin-login');
+        this.menuAddPost = document.getElementById('menu-add-post');
+        this.menuClearPosts = document.getElementById('menu-clear-posts');
+        this.menuLogout = document.getElementById('menu-logout');
         
         // Close button elements
         this.closeBtn = document.querySelector('.close');
@@ -55,13 +62,9 @@ class VRBlog {
         
         // Container elements
         this.blogPostsContainer = document.getElementById('blog-posts');
-        this.adminControls = document.getElementById('admin-controls');
-        this.adminLoginContainer = document.getElementById('admin-login');
         
         // Other elements
         this.themeToggle = document.getElementById('theme-toggle');
-        this.aboutLink = document.getElementById('about-link');
-        this.contactLink = document.getElementById('contact-link');
 
         this.initializeEventListeners();
         this.initializeTheme();
@@ -82,21 +85,70 @@ class VRBlog {
     }
 
     initializeEventListeners() {
-        // Admin controls
-        if (this.addPostBtn) {
-            this.addPostBtn.addEventListener('click', () => this.openModal());
+        // Hamburger menu
+        if (this.hamburgerMenu) {
+            this.hamburgerMenu.addEventListener('click', () => this.openMenu());
         }
         
-        if (this.clearPostsBtn) {
-            this.clearPostsBtn.addEventListener('click', () => this.clearAllPosts());
+        if (this.closeMenuBtn) {
+            this.closeMenuBtn.addEventListener('click', () => this.closeMenu());
         }
         
-        if (this.logoutBtn) {
-            this.logoutBtn.addEventListener('click', () => this.logout());
+        if (this.menuOverlay) {
+            this.menuOverlay.addEventListener('click', (e) => {
+                if (e.target === this.menuOverlay) {
+                    this.closeMenu();
+                }
+            });
         }
         
-        if (this.adminLoginBtn) {
-            this.adminLoginBtn.addEventListener('click', () => this.openAdminLoginModal());
+        // Menu items
+        if (this.menuAboutLink) {
+            this.menuAboutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.openAboutModal();
+            });
+        }
+        
+        if (this.menuContactLink) {
+            this.menuContactLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.openContactModal();
+            });
+        }
+        
+        if (this.menuAdminLogin) {
+            this.menuAdminLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.openAdminLoginModal();
+            });
+        }
+        
+        if (this.menuAddPost) {
+            this.menuAddPost.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.openModal();
+            });
+        }
+        
+        if (this.menuClearPosts) {
+            this.menuClearPosts.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.clearAllPosts();
+            });
+        }
+        
+        if (this.menuLogout) {
+            this.menuLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeMenu();
+                this.logout();
+            });
         }
         
         // Modal close buttons
@@ -129,23 +181,9 @@ class VRBlog {
             this.adminLoginForm.addEventListener('submit', (e) => this.handleAdminLogin(e));
         }
         
-        // Theme and navigation
+        // Theme toggle
         if (this.themeToggle) {
             this.themeToggle.addEventListener('click', () => this.toggleTheme());
-        }
-        
-        if (this.aboutLink) {
-            this.aboutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openAboutModal();
-            });
-        }
-        
-        if (this.contactLink) {
-            this.contactLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openContactModal();
-            });
         }
         
         // Window click events for closing modals
@@ -170,6 +208,12 @@ class VRBlog {
         // Keyboard events
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                // Close menu if open
+                if (this.menuOverlay && this.menuOverlay.classList.contains('active')) {
+                    this.closeMenu();
+                    return;
+                }
+                // Close modals
                 if (this.modal && this.modal.style.display === 'block') {
                     this.closeModal();
                 }
@@ -481,13 +525,37 @@ class VRBlog {
         this.updateAdminUI();
     }
 
+    openMenu() {
+        if (this.menuOverlay && this.hamburgerMenu) {
+            this.menuOverlay.classList.add('active');
+            this.hamburgerMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeMenu() {
+        if (this.menuOverlay && this.hamburgerMenu) {
+            this.menuOverlay.classList.remove('active');
+            this.hamburgerMenu.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
     updateAdminUI() {
         if (this.isAdminLoggedIn) {
-            this.adminControls.style.display = 'flex';
-            this.adminLoginContainer.style.display = 'none';
+            // Show admin menu items
+            if (this.menuAddPost) this.menuAddPost.style.display = 'block';
+            if (this.menuClearPosts) this.menuClearPosts.style.display = 'block';
+            if (this.menuLogout) this.menuLogout.style.display = 'block';
+            // Hide login menu item
+            if (this.menuAdminLogin) this.menuAdminLogin.style.display = 'none';
         } else {
-            this.adminControls.style.display = 'none';
-            this.adminLoginContainer.style.display = 'block';
+            // Hide admin menu items
+            if (this.menuAddPost) this.menuAddPost.style.display = 'none';
+            if (this.menuClearPosts) this.menuClearPosts.style.display = 'none';
+            if (this.menuLogout) this.menuLogout.style.display = 'none';
+            // Show login menu item
+            if (this.menuAdminLogin) this.menuAdminLogin.style.display = 'block';
         }
     }
 

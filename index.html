@@ -14,20 +14,42 @@
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>The Good, The Bad, The Ugly</h1>
-                    <span class="tagline">VR/MR Experience Reviews</span>
-                </div>
-                <div class="nav-right">
                     <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
                         <span class="theme-icon">●</span>
                     </button>
-                    <div class="nav-links">
-                        <a href="#" class="nav-link" id="about-link">About</a>
-                        <a href="#" class="nav-link" id="contact-link">Contact</a>
+                    <div class="logo-text">
+                        <h1>The Good, The Bad, The Ugly</h1>
+                        <span class="tagline">VR/MR Experience Reviews</span>
                     </div>
+                </div>
+                <div class="nav-right">
+                    <button id="hamburger-menu" class="hamburger-menu" aria-label="Open menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
                 </div>
             </div>
         </nav>
+        
+        <!-- Hamburger Menu Overlay -->
+        <div id="menu-overlay" class="menu-overlay">
+            <div class="menu-content">
+                <div class="menu-header">
+                    <h2>Menu</h2>
+                    <button id="close-menu" class="close-menu" aria-label="Close menu">×</button>
+                </div>
+                <nav class="menu-nav">
+                    <a href="#" class="menu-item" id="menu-about-link">About</a>
+                    <a href="#" class="menu-item" id="menu-contact-link">Contact</a>
+                    <div class="menu-divider"></div>
+                    <a href="#" class="menu-item" id="menu-admin-login" style="display: block;">Admin Login</a>
+                    <a href="#" class="menu-item" id="menu-add-post" style="display: none;">Add New Review</a>
+                    <a href="#" class="menu-item" id="menu-clear-posts" style="display: none;">Clear All Reviews</a>
+                    <a href="#" class="menu-item" id="menu-logout" style="display: none;">Logout</a>
+                </nav>
+            </div>
+        </div>
     </header>
 
     <main class="main-content">
@@ -39,16 +61,6 @@
         <section class="blog-posts" id="blog-posts">
             <!-- Blog posts will be dynamically inserted here -->
         </section>
-
-        <div class="add-post-container" id="admin-controls" style="display: none;">
-            <button id="add-post-btn" class="add-post-btn">Add New Review</button>
-            <button id="clear-posts-btn" class="clear-posts-btn">Clear All Reviews</button>
-            <button id="logout-btn" class="logout-btn">Logout</button>
-        </div>
-
-        <div class="admin-login-container" id="admin-login" style="display: block;">
-            <button id="admin-login-btn" class="admin-login-btn">Admin Login</button>
-        </div>
     </main>
 
     <!-- Modal for adding new posts -->
