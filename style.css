@@ -120,6 +120,7 @@ body {
     font-weight: 600;
     letter-spacing: -0.02em;
     margin: 0;
+    white-space: nowrap;
 }
 
 .tagline {
@@ -139,15 +140,15 @@ body {
     background: none;
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    width: 40px;
-    height: 40px;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     flex-shrink: 0;
 }
 
@@ -328,40 +329,18 @@ body {
 }
 
 .blog-post {
-    border-top: 3px solid var(--post-border-color);
-    border-bottom: 3px solid var(--post-border-color);
+    border-bottom: 4px solid #c0c0c0;
     padding: 2rem 0 4rem;
     margin-bottom: 2rem;
     transition: all 0.2s ease;
     position: relative;
 }
 
-.blog-post::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--post-border-color) 0%, transparent 100%);
-}
-
-.blog-post::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent 0%, var(--post-border-color) 100%);
-}
-
 .blog-post:hover {
     background-color: var(--hover-bg);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-top-color: var(--post-border-hover);
-    border-bottom-color: var(--post-border-hover);
+    border-bottom-color: #a0a0a0;
 }
 
 .read-more-hint {
@@ -651,8 +630,48 @@ body {
     margin-top: 0.75rem;
 }
 
-.media-input {
+.media-input-url {
     display: none;
+}
+
+.media-input-url.show {
+    display: block;
+}
+
+.media-input-file {
+    display: none;
+}
+
+.media-input-file-label-wrapper {
+    display: none;
+}
+
+.media-input-file-label-wrapper.show {
+    display: block;
+}
+
+.file-upload-label {
+    padding: 0.5rem 1rem;
+    border: 1px dashed var(--border-color);
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.file-upload-label:hover {
+    border-color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+input[type="file"]:valid ~ .file-upload-label::after {
+    content: " (File selected)";
+    color: var(--text-muted);
+    font-size: 0.75rem;
 }
 
 .submit-btn {
@@ -712,9 +731,9 @@ footer {
     }
 
     .theme-toggle {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        font-size: 1.25rem;
     }
 
     .hamburger-menu {
@@ -934,5 +953,6 @@ footer {
         flex-direction: column;
         text-align: center;
     }
+}
 }
 }
