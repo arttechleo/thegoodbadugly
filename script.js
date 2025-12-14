@@ -614,16 +614,11 @@ class VRBlog {
         try {
             const formData = new FormData(this.postForm);
             
-            // Validate required fields - use safe access for compatibility
-            const titleValue = formData.get('title');
-            const goodContentValue = formData.get('good-content');
-            const badContentValue = formData.get('bad-content');
-            const uglyContentValue = formData.get('ugly-content');
-            
-            const title = titleValue ? titleValue.trim() : '';
-            const goodContent = goodContentValue ? goodContentValue.trim() : '';
-            const badContent = badContentValue ? badContentValue.trim() : '';
-            const uglyContent = uglyContentValue ? uglyContentValue.trim() : '';
+            // Validate required fields - use optional chaining like working version
+            const title = formData.get('title')?.trim();
+            const goodContent = formData.get('good-content')?.trim();
+            const badContent = formData.get('bad-content')?.trim();
+            const uglyContent = formData.get('ugly-content')?.trim();
             
             if (!title || !goodContent || !badContent || !uglyContent) {
                 throw new Error('Please fill in all required fields');
@@ -634,68 +629,46 @@ class VRBlog {
             const badMedia = await this.getMediaUrl('bad');
             const uglyMedia = await this.getMediaUrl('ugly');
             
-            // Get media types
-            const goodMediaType = formData.get('good-media-type');
-            const badMediaType = formData.get('bad-media-type');
-            const uglyMediaType = formData.get('ugly-media-type');
-            
-            // Build post data - preserve date when editing
-            let postData;
+            // Build post data - match working version structure but preserve date when editing
+            let postDate;
             if (isEditing) {
-                const originalPost = this.posts.find(p => p.id === this.editingPostId);
-                if (!originalPost) {
-                    throw new Error('Post not found. Please refresh and try again.');
-                }
-                // Preserve original ID and date when editing
-                postData = {
-                    id: originalPost.id,
-                    title: title,
-                    date: originalPost.date, // Preserve original date
-                    good: {
-                        content: goodContent,
-                        media: this.processMediaInput(goodMediaType, goodMedia)
-                    },
-                    bad: {
-                        content: badContent,
-                        media: this.processMediaInput(badMediaType, badMedia)
-                    },
-                    ugly: {
-                        content: uglyContent,
-                        media: this.processMediaInput(uglyMediaType, uglyMedia)
-                    }
-                };
+                const existingPost = this.posts.find(p => p.id === this.editingPostId);
+                postDate = existingPost ? existingPost.date : new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
             } else {
-                // New post - create new date
-                postData = {
-                    id: Date.now(),
-                    title: title,
-                    date: new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }),
-                    good: {
-                        content: goodContent,
-                        media: this.processMediaInput(goodMediaType, goodMedia)
-                    },
-                    bad: {
-                        content: badContent,
-                        media: this.processMediaInput(badMediaType, badMedia)
-                    },
-                    ugly: {
-                        content: uglyContent,
-                        media: this.processMediaInput(uglyMediaType, uglyMedia)
-                    }
-                };
+                postDate = new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
             }
+            
+            const postData = {
+                id: this.editingPostId || Date.now(),
+                title: title,
+                date: postDate,
+                good: {
+                    content: goodContent,
+                    media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
+                },
+                bad: {
+                    content: badContent,
+                    media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
+                },
+                ugly: {
+                    content: uglyContent,
+                    media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
+                }
+            };
 
             if (isEditing) {
                 // Update existing post
                 const postIndex = this.posts.findIndex(p => p.id === this.editingPostId);
                 if (postIndex !== -1) {
                     this.posts[postIndex] = postData;
-                } else {
-                    throw new Error('Post not found. Please refresh and try again.');
                 }
             } else {
                 // Add new post
