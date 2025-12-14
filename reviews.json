@@ -1,23 +1,5 @@
 {
-  "reviews": [
-    {
-      "id": 1765740017709,
-      "title": "Rheheheh",
-      "date": "December 14, 2025",
-      "good": {
-        "content": "Hdhdhdhd",
-        "media": null
-      },
-      "bad": {
-        "content": "Dhhdhdhdhd",
-        "media": null
-      },
-      "ugly": {
-        "content": "Djdjdhjd",
-        "media": null
-      }
-    }
-  ],
-  "lastUpdated": "2025-12-14T19:20:17.989Z",
-  "totalReviews": 1
+  "reviews": [],
+  "lastUpdated": "2025-12-14T19:23:06.565Z",
+  "totalReviews": 0
 }
