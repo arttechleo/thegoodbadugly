@@ -494,10 +494,18 @@ class VRBlog {
 
         try {
             this.posts = this.posts.filter(post => post.id !== postId);
-            await this.updateGitHubRepo();
+            const result = await this.updateGitHubRepo();
             this.closePostDetailModal();
             this.renderPosts();
-            alert('Review deleted successfully!');
+            
+            const commitInfo = result?.commit ? `\n\nCommit: ${result.commit.sha.substring(0, 7)}` : '';
+            alert(`✅ Review deleted successfully!${commitInfo}`);
+            
+            // Refresh posts after a delay to ensure consistency
+            setTimeout(() => {
+                console.log('Refreshing posts after deletion...');
+                this.loadPosts();
+            }, 2000);
         } catch (error) {
             console.error('Error deleting post:', error);
             alert('Error deleting review. Please try again.');
@@ -679,7 +687,7 @@ class VRBlog {
             // Update GitHub repository
             const result = await this.updateGitHubRepo();
             
-            // Update UI immediately (don't reload - we already have the correct data)
+            // Update UI immediately with the current posts
             this.renderPosts();
             this.closeModal();
             
@@ -687,7 +695,7 @@ class VRBlog {
             const commitInfo = result?.commit ? `\n\nCommit: ${result.commit.sha.substring(0, 7)}` : '';
             const message = isEditing 
                 ? `✅ Review updated successfully!\n\nSaved to GitHub repository.${commitInfo}` 
-                : `✅ Review published successfully!\n\nSaved to GitHub repository.${commitInfo}\n\nThe site will update automatically after GitHub Pages rebuilds.`;
+                : `✅ Review published successfully!\n\nSaved to GitHub repository.${commitInfo}\n\nThe site will update automatically after GitHub Pages rebuilds (1-2 minutes).`;
             
             alert(message);
             
@@ -697,6 +705,13 @@ class VRBlog {
                 branch: 'master',
                 postCount: this.posts.length
             });
+            
+            // Force a reload of posts after a short delay to ensure we have the latest
+            // This helps with cross-device sync
+            setTimeout(() => {
+                console.log('Refreshing posts to ensure latest data...');
+                this.loadPosts();
+            }, 2000);
             
         } catch (error) {
             console.error('Error saving review:', error);
@@ -999,6 +1014,12 @@ class VRBlog {
 
 
     renderPosts() {
+        if (!this.blogPostsContainer) {
+            console.error('Blog posts container not found');
+            return;
+        }
+        
+        // Clear the container
         this.blogPostsContainer.innerHTML = '';
         
         if (this.posts.length === 0) {
@@ -1011,10 +1032,23 @@ class VRBlog {
             return;
         }
 
-        this.posts.forEach(post => {
+        // Sort posts by date (newest first) - using ID as fallback if date is same
+        const sortedPosts = [...this.posts].sort((a, b) => {
+            // Try to parse dates, fallback to ID comparison
+            const dateA = new Date(a.date || 0);
+            const dateB = new Date(b.date || 0);
+            if (dateA.getTime() !== dateB.getTime()) {
+                return dateB.getTime() - dateA.getTime(); // Newest first
+            }
+            return (b.id || 0) - (a.id || 0); // Fallback to ID
+        });
+
+        sortedPosts.forEach(post => {
             const postElement = this.createPostElement(post);
             this.blogPostsContainer.appendChild(postElement);
         });
+        
+        console.log(`Rendered ${sortedPosts.length} posts`);
     }
 
     createPostElement(post) {
@@ -1083,14 +1117,44 @@ class VRBlog {
     }
 
     async loadPosts() {
+        // For GitHub Pages, prioritize loading from the static file first
+        // This avoids CORS issues and is faster
+        const cacheBuster = `?t=${Date.now()}`;
+        
         try {
-            // Try to load from the default branch (master/main) - this is what GitHub Pages serves
-            // First, try to get the default branch, but if that fails, use master as fallback
+            // First, try loading from the static file (works on GitHub Pages)
+            const directResponse = await fetch(`./reviews.json${cacheBuster}`, { 
+                cache: 'no-store',
+                method: 'GET'
+            });
+            
+            if (directResponse.ok) {
+                try {
+                    const data = await directResponse.json();
+                    if (data && data.reviews && Array.isArray(data.reviews)) {
+                        this.posts = data.reviews;
+                        console.log(`✅ Loaded ${this.posts.length} posts from static reviews.json`);
+                        this.renderPosts();
+                        return; // Success, exit early
+                    }
+                } catch (parseError) {
+                    console.warn('Error parsing static reviews.json, trying GitHub API...', parseError);
+                }
+            }
+        } catch (e) {
+            console.log('Static file not available, trying GitHub API...');
+        }
+        
+        // Fallback: Try GitHub API (without Cache-Control header to avoid CORS issues)
+        try {
+            // Determine the default branch
             let targetBranch = 'master';
             
-            // Try to determine the default branch (but don't require auth for this)
             try {
-                const repoResponse = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}`);
+                const repoResponse = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}`, {
+                    method: 'GET'
+                    // No custom headers to avoid CORS issues
+                });
                 if (repoResponse.ok) {
                     const repoInfo = await repoResponse.json();
                     targetBranch = repoInfo.default_branch || 'master';
@@ -1099,12 +1163,10 @@ class VRBlog {
                 console.log('Could not determine default branch, using master');
             }
             
-            // Load from the default branch
+            // Load from the default branch (no Cache-Control header - causes CORS issues)
             const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json?ref=${targetBranch}`, {
-                cache: 'no-cache',
-                headers: {
-                    'Cache-Control': 'no-cache'
-                }
+                method: 'GET'
+                // No custom headers - GitHub API doesn't allow Cache-Control in CORS preflight
             });
             
             if (response.ok) {
@@ -1112,7 +1174,7 @@ class VRBlog {
                 
                 // Validate that we have content
                 if (!fileData.content) {
-                    console.warn('GitHub API response missing content field, starting with empty posts');
+                    console.warn('GitHub API response missing content field');
                     this.posts = [];
                 } else {
                     try {
@@ -1120,55 +1182,30 @@ class VRBlog {
                         
                         // Validate that content is not empty
                         if (!content || content.trim() === '') {
-                            console.warn('Decoded content is empty, starting with empty posts');
+                            console.warn('Decoded content is empty');
                             this.posts = [];
                         } else {
                             const data = JSON.parse(content);
                             this.posts = data.reviews || [];
-                            console.log(`✅ Loaded ${this.posts.length} posts from GitHub (branch: ${targetBranch})`);
+                            console.log(`✅ Loaded ${this.posts.length} posts from GitHub API (branch: ${targetBranch})`);
                         }
                     } catch (parseError) {
                         console.error('Error parsing reviews.json content:', parseError);
-                        console.error('Content preview:', fileData.content ? fileData.content.substring(0, 100) : 'null');
-                        // If parsing fails, start with empty posts
                         this.posts = [];
                     }
                 }
             } else if (response.status === 404) {
-                console.log(`No reviews.json found in ${targetBranch} branch, starting with empty posts`);
+                console.log(`No reviews.json found in ${targetBranch} branch`);
                 this.posts = [];
             } else {
-                console.warn(`Failed to load posts from GitHub (${response.status}):`, response.statusText);
-                // Try loading directly from the file (for GitHub Pages)
-                try {
-                    const directResponse = await fetch('./reviews.json', { cache: 'no-cache' });
-                    if (directResponse.ok) {
-                        const data = await directResponse.json();
-                        this.posts = data.reviews || [];
-                        console.log(`✅ Loaded ${this.posts.length} posts from local reviews.json`);
-                    } else {
-                        this.posts = [];
-                    }
-                } catch (e) {
-                    console.warn('Could not load from local file either');
-                    this.posts = [];
-                }
+                console.warn(`Failed to load posts from GitHub API (${response.status}):`, response.statusText);
+                this.posts = [];
             }
         } catch (error) {
-            console.error('Could not load posts from GitHub:', error);
-            // Try loading directly from the file as fallback (for GitHub Pages)
-            try {
-                const directResponse = await fetch('./reviews.json', { cache: 'no-cache' });
-                if (directResponse.ok) {
-                    const data = await directResponse.json();
-                    this.posts = data.reviews || [];
-                    console.log(`✅ Loaded ${this.posts.length} posts from local reviews.json (fallback)`);
-                } else {
-                    this.posts = [];
-                }
-            } catch (e) {
+            console.error('Could not load posts from GitHub API:', error);
+            // If we already tried static file and it failed, posts will be empty
+            if (this.posts.length === 0) {
                 console.warn('Could not load posts from any source, starting with empty posts');
-                this.posts = [];
             }
         }
         
