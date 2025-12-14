@@ -130,7 +130,7 @@ body {
 
 .tagline {
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 400;
     margin-top: 0.25rem;
 }
@@ -732,11 +732,12 @@ footer {
     }
 
     .logo h1 {
-        font-size: 1.25rem;
+        font-size: clamp(0.9rem, 4vw, 1.25rem);
+        line-height: 1.2;
     }
 
     .tagline {
-        font-size: 0.75rem;
+        font-size: clamp(0.85rem, 3.5vw, 0.95rem);
     }
 
     .theme-toggle {
@@ -872,11 +873,19 @@ footer {
         min-height: 60px;
     }
     
+    .logo-text {
+        flex: 1;
+        min-width: 0;
+    }
+    
     .logo-text h1 {
-        max-width: calc(100vw - 180px);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        font-size: clamp(0.9rem, 4vw, 1.25rem);
+        line-height: 1.2;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        max-width: 100%;
     }
     
     /* Fix mobile menu overlay */
@@ -907,7 +916,11 @@ footer {
 
 @media (max-width: 480px) {
     .logo h1 {
-        font-size: 1.25rem;
+        font-size: clamp(0.85rem, 5vw, 1.15rem);
+        line-height: 1.2;
+        white-space: normal;
+        word-wrap: break-word;
+        hyphens: auto;
     }
 
     .hero h2 {

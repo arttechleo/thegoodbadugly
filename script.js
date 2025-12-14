@@ -46,7 +46,6 @@ class VRBlog {
         this.menuContactLink = document.getElementById('menu-contact-link');
         this.menuAdminLogin = document.getElementById('menu-admin-login');
         this.menuAddPost = document.getElementById('menu-add-post');
-        this.menuClearPosts = document.getElementById('menu-clear-posts');
         this.menuLogout = document.getElementById('menu-logout');
         
         // Close button elements
@@ -140,14 +139,6 @@ class VRBlog {
                 e.preventDefault();
                 this.closeMenu();
                 this.openModal();
-            });
-        }
-        
-        if (this.menuClearPosts) {
-            this.menuClearPosts.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.closeMenu();
-                this.clearAllPosts();
             });
         }
         
@@ -589,14 +580,12 @@ class VRBlog {
         if (this.isAdminLoggedIn) {
             // Show admin menu items
             if (this.menuAddPost) this.menuAddPost.style.display = 'block';
-            if (this.menuClearPosts) this.menuClearPosts.style.display = 'block';
             if (this.menuLogout) this.menuLogout.style.display = 'block';
             // Hide login menu item
             if (this.menuAdminLogin) this.menuAdminLogin.style.display = 'none';
         } else {
             // Hide admin menu items
             if (this.menuAddPost) this.menuAddPost.style.display = 'none';
-            if (this.menuClearPosts) this.menuClearPosts.style.display = 'none';
             if (this.menuLogout) this.menuLogout.style.display = 'none';
             // Show login menu item
             if (this.menuAdminLogin) this.menuAdminLogin.style.display = 'block';
@@ -640,36 +629,55 @@ class VRBlog {
             const badMedia = await this.getMediaUrl('bad');
             const uglyMedia = await this.getMediaUrl('ugly');
             
-            const postData = {
-                id: this.editingPostId || Date.now(),
-                title: title,
-                date: new Date().toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                }),
-                good: {
-                    content: goodContent,
-                    media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
-                },
-                bad: {
-                    content: badContent,
-                    media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
-                },
-                ugly: {
-                    content: uglyContent,
-                    media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
-                }
-            };
-
             if (isEditing) {
-                // Update existing post
+                // Update existing post - preserve original ID and date
                 const postIndex = this.posts.findIndex(p => p.id === this.editingPostId);
                 if (postIndex !== -1) {
-                    this.posts[postIndex] = postData;
+                    const originalPost = this.posts[postIndex];
+                    // Preserve original date and ID when editing
+                    this.posts[postIndex] = {
+                        id: originalPost.id,
+                        title: title,
+                        date: originalPost.date, // Preserve original date
+                        good: {
+                            content: goodContent,
+                            media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
+                        },
+                        bad: {
+                            content: badContent,
+                            media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
+                        },
+                        ugly: {
+                            content: uglyContent,
+                            media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
+                        }
+                    };
+                } else {
+                    throw new Error('Post not found. Please refresh and try again.');
                 }
             } else {
                 // Add new post
+                const postData = {
+                    id: Date.now(),
+                    title: title,
+                    date: new Date().toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }),
+                    good: {
+                        content: goodContent,
+                        media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
+                    },
+                    bad: {
+                        content: badContent,
+                        media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
+                    },
+                    ugly: {
+                        content: uglyContent,
+                        media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
+                    }
+                };
                 this.posts.unshift(postData);
             }
             
@@ -901,26 +909,6 @@ class VRBlog {
         return url;
     }
 
-    async clearAllPosts() {
-        if (!this.isAdminLoggedIn || !this.githubConfig.token) {
-            alert('Admin access required.');
-            return;
-        }
-        
-        if (!confirm('Are you sure you want to delete all reviews? This action cannot be undone and will update your GitHub repository.')) {
-            return;
-        }
-        
-        try {
-            this.posts = [];
-            await this.updateGitHubRepo();
-            this.renderPosts();
-            alert('All reviews cleared successfully!');
-        } catch (error) {
-            console.error('Error clearing posts:', error);
-            alert('Error clearing reviews. Please try again.');
-        }
-    }
 
     renderPosts() {
         this.blogPostsContainer.innerHTML = '';
