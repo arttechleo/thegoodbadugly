@@ -614,11 +614,16 @@ class VRBlog {
         try {
             const formData = new FormData(this.postForm);
             
-            // Validate required fields
-            const title = formData.get('title')?.trim();
-            const goodContent = formData.get('good-content')?.trim();
-            const badContent = formData.get('bad-content')?.trim();
-            const uglyContent = formData.get('ugly-content')?.trim();
+            // Validate required fields - use safe access for compatibility
+            const titleValue = formData.get('title');
+            const goodContentValue = formData.get('good-content');
+            const badContentValue = formData.get('bad-content');
+            const uglyContentValue = formData.get('ugly-content');
+            
+            const title = titleValue ? titleValue.trim() : '';
+            const goodContent = goodContentValue ? goodContentValue.trim() : '';
+            const badContent = badContentValue ? badContentValue.trim() : '';
+            const uglyContent = uglyContentValue ? uglyContentValue.trim() : '';
             
             if (!title || !goodContent || !badContent || !uglyContent) {
                 throw new Error('Please fill in all required fields');
@@ -629,35 +634,39 @@ class VRBlog {
             const badMedia = await this.getMediaUrl('bad');
             const uglyMedia = await this.getMediaUrl('ugly');
             
+            // Get media types
+            const goodMediaType = formData.get('good-media-type');
+            const badMediaType = formData.get('bad-media-type');
+            const uglyMediaType = formData.get('ugly-media-type');
+            
+            // Build post data - preserve date when editing
+            let postData;
             if (isEditing) {
-                // Update existing post - preserve original ID and date
-                const postIndex = this.posts.findIndex(p => p.id === this.editingPostId);
-                if (postIndex !== -1) {
-                    const originalPost = this.posts[postIndex];
-                    // Preserve original date and ID when editing
-                    this.posts[postIndex] = {
-                        id: originalPost.id,
-                        title: title,
-                        date: originalPost.date, // Preserve original date
-                        good: {
-                            content: goodContent,
-                            media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
-                        },
-                        bad: {
-                            content: badContent,
-                            media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
-                        },
-                        ugly: {
-                            content: uglyContent,
-                            media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
-                        }
-                    };
-                } else {
+                const originalPost = this.posts.find(p => p.id === this.editingPostId);
+                if (!originalPost) {
                     throw new Error('Post not found. Please refresh and try again.');
                 }
+                // Preserve original ID and date when editing
+                postData = {
+                    id: originalPost.id,
+                    title: title,
+                    date: originalPost.date, // Preserve original date
+                    good: {
+                        content: goodContent,
+                        media: this.processMediaInput(goodMediaType, goodMedia)
+                    },
+                    bad: {
+                        content: badContent,
+                        media: this.processMediaInput(badMediaType, badMedia)
+                    },
+                    ugly: {
+                        content: uglyContent,
+                        media: this.processMediaInput(uglyMediaType, uglyMedia)
+                    }
+                };
             } else {
-                // Add new post
-                const postData = {
+                // New post - create new date
+                postData = {
                     id: Date.now(),
                     title: title,
                     date: new Date().toLocaleDateString('en-US', {
@@ -667,17 +676,29 @@ class VRBlog {
                     }),
                     good: {
                         content: goodContent,
-                        media: this.processMediaInput(formData.get('good-media-type'), goodMedia)
+                        media: this.processMediaInput(goodMediaType, goodMedia)
                     },
                     bad: {
                         content: badContent,
-                        media: this.processMediaInput(formData.get('bad-media-type'), badMedia)
+                        media: this.processMediaInput(badMediaType, badMedia)
                     },
                     ugly: {
                         content: uglyContent,
-                        media: this.processMediaInput(formData.get('ugly-media-type'), uglyMedia)
+                        media: this.processMediaInput(uglyMediaType, uglyMedia)
                     }
                 };
+            }
+
+            if (isEditing) {
+                // Update existing post
+                const postIndex = this.posts.findIndex(p => p.id === this.editingPostId);
+                if (postIndex !== -1) {
+                    this.posts[postIndex] = postData;
+                } else {
+                    throw new Error('Post not found. Please refresh and try again.');
+                }
+            } else {
+                // Add new post
                 this.posts.unshift(postData);
             }
             
@@ -700,16 +721,30 @@ class VRBlog {
             
         } catch (error) {
             console.error('Error saving review:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                isEditing: isEditing,
+                postsCount: this.posts.length
+            });
             
             // Show user-friendly error message
-            const errorMessage = error.message.includes('fill in all') 
-                ? error.message 
-                : 'Error saving review. Please check your internet connection and try again.';
+            let errorMessage = 'Error saving review. ';
+            if (error.message.includes('fill in all')) {
+                errorMessage = error.message;
+            } else if (error.message.includes('Post not found')) {
+                errorMessage = error.message;
+            } else if (error.message.includes('GitHub')) {
+                errorMessage += 'GitHub API error. Please check your token and internet connection.';
+            } else {
+                errorMessage += 'Please check your internet connection and try again.';
+                errorMessage += '\n\nError: ' + error.message;
+            }
             
             alert(errorMessage);
             
             // Revert changes if it was a new post
-            if (!isEditing) {
+            if (!isEditing && this.posts.length > 0) {
                 this.posts.shift();
             }
         } finally {
@@ -805,7 +840,12 @@ class VRBlog {
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+                    }
                     
                     // If it's a SHA mismatch, retry with fresh data
                     if (errorData.message && errorData.message.includes('does not match')) {
@@ -819,7 +859,8 @@ class VRBlog {
                         }
                     }
                     
-                    throw new Error(`GitHub API error: ${errorData.message || response.status}`);
+                    const errorMsg = errorData.message || `HTTP ${response.status}`;
+                    throw new Error(`GitHub API error: ${errorMsg}`);
                 }
                 
                 return await response.json();
