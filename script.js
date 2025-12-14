@@ -742,6 +742,8 @@ class VRBlog {
             try {
                 // Get the current file to get its SHA (required for updates)
                 // Use posts branch for storing reviews, fallback to master if branch doesn't exist
+                let detectedBranch = 'master'; // Track which branch we successfully read from
+                
                 const getCurrentFile = async (useBranch = true) => {
                     try {
                         const branchParam = useBranch ? `?ref=${this.githubConfig.postsBranch}` : '';
@@ -753,6 +755,7 @@ class VRBlog {
                         });
                         
                         if (response.ok) {
+                            detectedBranch = useBranch ? this.githubConfig.postsBranch : 'master';
                             return await response.json();
                         } else if (response.status === 404) {
                             // If branch doesn't exist and we tried branch, fallback to master
@@ -760,7 +763,8 @@ class VRBlog {
                                 console.log('Posts branch not found, trying master branch...');
                                 return await getCurrentFile(false);
                             }
-                            // File doesn't exist, we'll create it
+                            // File doesn't exist, we'll create it on master
+                            detectedBranch = 'master';
                             return null;
                         } else {
                             throw new Error(`Failed to get current file: ${response.status}`);
@@ -772,9 +776,11 @@ class VRBlog {
                             try {
                                 return await getCurrentFile(false);
                             } catch (e) {
+                                detectedBranch = 'master';
                                 return null;
                             }
                         }
+                        detectedBranch = 'master';
                         return null;
                     }
                 };
@@ -819,13 +825,14 @@ class VRBlog {
                 const content = btoa(JSON.stringify(reviewsData, null, 2));
                 
                 // Prepare the update payload
-                // Determine which branch to use (prefer posts branch, fallback to master)
-                const targetBranch = currentFile ? (currentFile.url.includes(`ref=${this.githubConfig.postsBranch}`) ? this.githubConfig.postsBranch : 'master') : this.githubConfig.postsBranch;
+                // Use the branch we successfully detected from reading the file
+                const targetBranch = detectedBranch;
+                console.log(`Saving to branch: ${targetBranch}`);
                 
                 const payload = {
                     message: this.posts.length > 0 ? `Update reviews: ${this.posts[0].title}` : 'Clear all reviews',
                     content: content,
-                    branch: targetBranch // Specify branch in payload to create/update on that branch
+                    branch: targetBranch // Specify branch in payload
                 };
                 
                 // Add SHA if file exists (required for updates)
@@ -833,9 +840,8 @@ class VRBlog {
                     payload.sha = currentFile.sha;
                 }
                 
-                // Update the file on the target branch
-                const branchParam = `?ref=${targetBranch}`;
-                const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json${branchParam}`, {
+                // Update the file on the target branch (don't use ?ref in URL when using branch in payload)
+                const response = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${this.githubConfig.token}`,
@@ -853,6 +859,15 @@ class VRBlog {
                         errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
                     }
                     
+                    // Log detailed error for debugging
+                    console.error('GitHub API error response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: errorData,
+                        targetBranch: targetBranch,
+                        hasSha: !!(currentFile && currentFile.sha)
+                    });
+                    
                     // If it's a SHA mismatch, retry with fresh data
                     if (errorData.message && errorData.message.includes('does not match')) {
                         attempt++;
@@ -865,8 +880,58 @@ class VRBlog {
                         }
                     }
                     
+                    // If branch doesn't exist error, try master as fallback (only once)
+                    if ((errorData.message && (errorData.message.includes('branch') || errorData.message.includes('not found') || errorData.message.includes('Reference'))) && detectedBranch !== 'master') {
+                        console.log(`Branch ${detectedBranch} may not exist, retrying with master branch...`);
+                        
+                        // Get master branch file to get SHA if it exists
+                        try {
+                            const masterResponse = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json?ref=master`, {
+                                headers: {
+                                    'Authorization': `Bearer ${this.githubConfig.token}`,
+                                    'Accept': 'application/vnd.github.v3+json'
+                                }
+                            });
+                            
+                            const masterPayload = {
+                                message: payload.message,
+                                content: payload.content,
+                                branch: 'master'
+                            };
+                            
+                            if (masterResponse.ok) {
+                                const masterFile = await masterResponse.json();
+                                if (masterFile && masterFile.sha) {
+                                    masterPayload.sha = masterFile.sha;
+                                }
+                            }
+                            
+                            // Retry the request with master
+                            const retryResponse = await fetch(`https://api.github.com/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/reviews.json`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': `Bearer ${this.githubConfig.token}`,
+                                    'Accept': 'application/vnd.github.v3+json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(masterPayload)
+                            });
+                            
+                            if (retryResponse.ok) {
+                                console.log('Successfully saved to master branch');
+                                return await retryResponse.json();
+                            } else {
+                                const retryError = await retryResponse.json().catch(() => ({ message: `HTTP ${retryResponse.status}` }));
+                                console.error('Master branch save also failed:', retryError);
+                            }
+                        } catch (masterError) {
+                            console.error('Error trying master branch fallback:', masterError);
+                        }
+                        // If master also fails, continue to throw original error
+                    }
+                    
                     const errorMsg = errorData.message || `HTTP ${response.status}`;
-                    throw new Error(`GitHub API error: ${errorMsg}`);
+                    throw new Error(`GitHub API error: ${errorMsg} (Status: ${response.status})`);
                 }
                 
                 return await response.json();
