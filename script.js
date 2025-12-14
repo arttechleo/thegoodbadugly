@@ -85,13 +85,21 @@ class VRBlog {
     }
 
     initializeEventListeners() {
-        // Hamburger menu
+        // Hamburger menu - use click with passive touch handling
         if (this.hamburgerMenu) {
-            this.hamburgerMenu.addEventListener('click', () => this.openMenu());
+            this.hamburgerMenu.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.openMenu();
+            }, { passive: false });
         }
         
         if (this.closeMenuBtn) {
-            this.closeMenuBtn.addEventListener('click', () => this.closeMenu());
+            this.closeMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeMenu();
+            }, { passive: false });
         }
         
         if (this.menuOverlay) {
@@ -181,9 +189,13 @@ class VRBlog {
             this.adminLoginForm.addEventListener('submit', (e) => this.handleAdminLogin(e));
         }
         
-        // Theme toggle
+        // Theme toggle - use click with passive touch handling
         if (this.themeToggle) {
-            this.themeToggle.addEventListener('click', () => this.toggleTheme());
+            this.themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleTheme();
+            }, { passive: false });
         }
         
         // Window click events for closing modals
