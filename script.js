@@ -75,10 +75,9 @@ class VRBlog {
 
     sanitizeText(text) {
         if (text == null) return '';
-        // Replace sequences like "\n" and real newlines with a space
         return String(text)
-            .replace(/\\n/g, ' ')  // turns "\n" into a space
-            .replace(/\n/g, ' ')   // turns real newlines into a space
+            .replace(/\\n/g, ' ')  // turns literal "\n" into a space
+            .replace(/\n/g, ' ')   // turns real newline characters into a space
             .trim();
     }
 

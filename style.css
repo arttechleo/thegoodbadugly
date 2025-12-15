@@ -1108,8 +1108,37 @@ footer {
 
     /* PC logo: EXACT same drawing as mobile, only bigger */
     .theme-toggle {
-        width: 2.6rem;       /* tweak 2.4–2.8 until it visually matches title+subtitle */
+        width: 2.6rem;   /* adjust 2.4–2.8rem if needed */
         height: 2.6rem;
         font-size: 2.6rem;
+    }
+
+    /* Hamburger icon: equal line weight and symmetric X on PC */
+    .hamburger-menu {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .hamburger-menu span {
+        width: 20px;
+        height: 2px;
+        border-radius: 999px;
+        background-color: var(--text-color);
+        transition: transform 0.25s ease, opacity 0.25s ease;
+        transform-origin: center;
+    }
+
+    .hamburger-menu.active span:nth-child(1) {
+        transform: translateY(5px) rotate(45deg);
+    }
+
+    .hamburger-menu.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-menu.active span:nth-child(3) {
+        transform: translateY(-5px) rotate(-45deg);
     }
 }
