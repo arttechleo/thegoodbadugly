@@ -185,17 +185,20 @@ body {
 .hamburger-menu span {
     width: 20px;
     height: 2px;
+    border-radius: 999px;
     background-color: var(--text-color);
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     display: block;
+    transform-origin: center;
 }
 
 .hamburger-menu:hover {
     background-color: var(--hover-bg);
 }
 
+/* Active state: make a clean, even "X" */
 .hamburger-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(6px, 6px);
+    transform: translateY(4px) rotate(45deg);
 }
 
 .hamburger-menu.active span:nth-child(2) {
@@ -203,7 +206,7 @@ body {
 }
 
 .hamburger-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
+    transform: translateY(-4px) rotate(-45deg);
 }
 
 /* Menu Overlay */
@@ -1035,39 +1038,81 @@ footer {
     }
 }
 
-/* === Layout alignment fixes === */
-:root {
-    --layout-width: 900px; /* pick what looks best: 800 / 900 / 1000 */
-}
+/* ===== Desktop layout alignment (PC / laptop) ===== */
+@media (min-width: 769px) {
+    /* Shared layout width for nav and content */
+    :root {
+        --layout-width: 900px;
+        --logo-size: 1.5rem; /* controls both dot and title size on desktop */
+    }
 
-/* Make navbar and main content share the same width & centering */
-.nav-container,
-.main-content {
-    max-width: var(--layout-width);
-    margin-left: auto;
-    margin-right: auto;
-}
+    .nav-container,
+    .main-content {
+        max-width: var(--layout-width);
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
 
-/* === Hero alignment & spacing === */
-.hero {
-    text-align: left;             /* align with post titles */
-    padding: 3rem 0 3rem;         /* a bit tighter under the nav */
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-}
+    /* Space below fixed navbar */
+    .main-content {
+        margin-top: 110px;
+    }
 
-.hero h2 {
-    font-size: 2.4rem;
-    margin-bottom: 0.75rem;
-}
+    /* Hero aligned with post titles */
+    .hero {
+        text-align: left;
+        padding: 3rem 0 3rem;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
 
-.hero p {
-    font-size: 1rem;
-    color: var(--text-muted);
-    max-width: 38rem;             /* keeps subtitle from going super wide */
-}
+    .hero h2 {
+        font-size: 2.4rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.03em;
+    }
 
-/* === Space below fixed navbar === */
-.main-content {
-    margin-top: 110px;   /* bump this up/down to taste: 110–120 usually feels right */
+    .hero p {
+        font-size: 1rem;
+        color: var(--text-muted);
+        max-width: 38rem;
+    }
+
+    /* Keep logo mark and title visually same size & aligned */
+    .logo h1 {
+        font-size: var(--logo-size);
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Outer circle of the logo (theme-toggle button) */
+    .theme-toggle {
+        width: var(--logo-size);
+        height: var(--logo-size);
+        border: 2px solid var(--text-color);
+        position: relative;
+        font-size: 0; /* Hide the ● character */
+    }
+
+    /* Inner circle of the logo using pseudo-element */
+    .theme-toggle::before {
+        content: '';
+        position: absolute;
+        width: calc(var(--logo-size) * 0.4);
+        height: calc(var(--logo-size) * 0.4);
+        border-radius: 50%;
+        border: 2px solid var(--text-color);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
