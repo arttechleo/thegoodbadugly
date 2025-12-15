@@ -1034,3 +1034,40 @@ footer {
         text-align: center;
     }
 }
+
+/* === Layout alignment fixes === */
+:root {
+    --layout-width: 900px; /* pick what looks best: 800 / 900 / 1000 */
+}
+
+/* Make navbar and main content share the same width & centering */
+.nav-container,
+.main-content {
+    max-width: var(--layout-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* === Hero alignment & spacing === */
+.hero {
+    text-align: left;             /* align with post titles */
+    padding: 3rem 0 3rem;         /* a bit tighter under the nav */
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.hero h2 {
+    font-size: 2.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.hero p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 38rem;             /* keeps subtitle from going super wide */
+}
+
+/* === Space below fixed navbar === */
+.main-content {
+    margin-top: 110px;   /* bump this up/down to taste: 110–120 usually feels right */
+}
