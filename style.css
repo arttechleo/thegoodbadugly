@@ -1043,9 +1043,12 @@ footer {
     /* Shared layout width for nav and content */
     :root {
         --layout-width: 900px;
-        --logo-size: 1.5rem; /* controls both dot and title size on desktop */
+        /* make the logo circle tall enough to visually match the two lines
+           "The Good, The Bad, The Ugly" + "VR/MR Experience Reviews" */
+        --logo-size: 3.2rem;
     }
 
+    /* Navbar and main content aligned on the same vertical line */
     .nav-container,
     .main-content {
         max-width: var(--layout-width);
@@ -1055,12 +1058,12 @@ footer {
         padding-right: 2rem;
     }
 
-    /* Space below fixed navbar */
+    /* Space below fixed navbar so hero/post titles sit nicely under it */
     .main-content {
-        margin-top: 110px;
+        margin-top: 120px;
     }
 
-    /* Hero aligned with post titles */
+    /* Hero text left-aligned with post titles */
     .hero {
         text-align: left;
         padding: 3rem 0 3rem;
@@ -1080,39 +1083,91 @@ footer {
         max-width: 38rem;
     }
 
-    /* Keep logo mark and title visually same size & aligned */
-    .logo h1 {
-        font-size: var(--logo-size);
-        line-height: 1.1;
-        display: flex;
-        align-items: center;
-    }
-
+    /* Logo block: keep text and circle aligned on the same baseline */
     .logo {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
-    /* Outer circle of the logo (theme-toggle button) */
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .logo h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .tagline {
+        font-size: 1rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Circle logo on desktop:
+       – outer circle matches roughly the height of the two text lines
+       – inner circle perfectly centered */
     .theme-toggle {
         width: var(--logo-size);
         height: var(--logo-size);
+        border-radius: 50%;
         border: 2px solid var(--text-color);
         position: relative;
-        font-size: 0; /* Hide the ● character */
+        font-size: 0;          /* hide any text like ● */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
     }
 
-    /* Inner circle of the logo using pseudo-element */
     .theme-toggle::before {
         content: '';
         position: absolute;
-        width: calc(var(--logo-size) * 0.4);
-        height: calc(var(--logo-size) * 0.4);
+        width: calc(var(--logo-size) * 0.45);
+        height: calc(var(--logo-size) * 0.45);
         border-radius: 50%;
         border: 2px solid var(--text-color);
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+    }
+
+    /* Make sure any span inside isn't adding extra glyphs */
+    .theme-toggle .theme-icon {
+        font-size: 0;
+    }
+
+    /* Hamburger icon: equal line weight and symmetric X on PC */
+    .hamburger-menu {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .hamburger-menu span {
+        width: 20px;
+        height: 2px;
+        border-radius: 999px;
+        background-color: var(--text-color);
+        transition: transform 0.25s ease, opacity 0.25s ease;
+        transform-origin: center;
+    }
+
+    .hamburger-menu.active span:nth-child(1) {
+        transform: translateY(5px) rotate(45deg);
+    }
+
+    .hamburger-menu.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-menu.active span:nth-child(3) {
+        transform: translateY(-5px) rotate(-45deg);
     }
 }

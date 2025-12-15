@@ -498,8 +498,11 @@ class VRBlog {
             this.closePostDetailModal();
             this.renderPosts();
             
-            const commitInfo = result?.commit ? `\n\nCommit: ${result.commit.sha.substring(0, 7)}` : '';
-            alert(`✅ Review deleted successfully!${commitInfo}`);
+            const commitInfo = result?.commit
+                ? ` (commit ${result.commit.sha.substring(0, 7)})`
+                : '';
+
+            alert(`✅ Review deleted successfully${commitInfo}.`);
             
             // Refresh posts after a delay to ensure consistency
             setTimeout(() => {
@@ -692,10 +695,12 @@ class VRBlog {
             this.closeModal();
             
             // Success notification with details
-            const commitInfo = result?.commit ? `\n\nCommit: ${result.commit.sha.substring(0, 7)}` : '';
+            const commitInfo = result?.commit
+                ? ` (commit ${result.commit.sha.substring(0, 7)})`
+                : '';
             const message = isEditing 
-                ? `✅ Review updated successfully!\n\nSaved to GitHub repository.${commitInfo}` 
-                : `✅ Review published successfully!\n\nSaved to GitHub repository.${commitInfo}\n\nThe site will update automatically after GitHub Pages rebuilds (1-2 minutes).`;
+                ? `✅ Review updated successfully! Saved to GitHub repository${commitInfo}.` 
+                : `✅ Review published successfully! Saved to GitHub repository${commitInfo}. The site will update automatically after GitHub Pages rebuilds (1-2 minutes).`;
             
             alert(message);
             
@@ -728,7 +733,7 @@ class VRBlog {
             }
             
             // Show user-friendly error message
-            let errorMessage = '❌ Error saving review.\n\n';
+            let errorMessage = '❌ Error saving review. ';
             if (error.message.includes('fill in all')) {
                 errorMessage = error.message;
             } else if (error.message.includes('Post not found')) {
@@ -736,17 +741,14 @@ class VRBlog {
             } else if (error.message.includes('No GitHub token')) {
                 errorMessage += 'Please log in with your GitHub token first.';
             } else if (error.message.includes('GitHub API error')) {
-                errorMessage += 'GitHub API error:\n';
+                errorMessage += 'GitHub API error: ';
                 errorMessage += error.message.replace('GitHub API error: ', '');
-                errorMessage += '\n\nPlease check:\n';
-                errorMessage += '• Your GitHub token is valid and has "repo" permissions\n';
-                errorMessage += '• You have write access to the repository\n';
-                errorMessage += '• Your internet connection is working';
+                errorMessage += ' Please check: Your GitHub token is valid and has "repo" permissions, you have write access to the repository, and your internet connection is working.';
             } else if (error.message.includes('Failed to create')) {
                 errorMessage += error.message;
             } else {
                 errorMessage += error.message || 'Unknown error occurred.';
-                errorMessage += '\n\nPlease check your internet connection and try again.';
+                errorMessage += ' Please check your internet connection and try again.';
             }
             
             alert(errorMessage);
