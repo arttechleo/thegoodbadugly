@@ -190,7 +190,10 @@ body {
     border: 2px solid #ffffff;
 }
 
-/* ==== Hamburger Menu: equal-weight lines on all states ==== */
+/* =========================
+   HAMBURGER → X (animated)
+   ========================= */
+
 .hamburger-menu {
     background: none;
     border: 1px solid var(--border-color);
@@ -198,42 +201,68 @@ body {
     height: 40px;
     border-radius: 8px;
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
+    position: relative;
     padding: 0;
     transition: background-color 0.2s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Three equal-weight bars, centered and ready to morph */
 .hamburger-menu span {
-    width: 22px;
-    height: 2px;                     /* SAME thickness for all three lines */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;          /* bar length (also X arm length) */
+    height: 2px;          /* line weight */
     border-radius: 999px;
     background-color: var(--text-color);
     display: block;
     transform-origin: center;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+/* Top bar (shifted up) */
+.hamburger-menu span:nth-child(1) {
+    transform: translate(-50%, -50%) translateY(-6px);
+}
+
+/* Middle bar (center) */
+.hamburger-menu span:nth-child(2) {
+    transform: translate(-50%, -50%);
+}
+
+/* Bottom bar (shifted down) */
+.hamburger-menu span:nth-child(3) {
+    transform: translate(-50%, -50%) translateY(6px);
 }
 
 .hamburger-menu:hover {
     background-color: var(--hover-bg);
 }
 
-/* Active: perfectly symmetric X - lines overlap at center with no translation, only rotation */
-.hamburger-menu.active span:nth-child(1) {
-    transform: translateY(0) rotate(45deg);
+/* === ACTIVE STATE: perfect centered X, equal arms === */
+
+/* Both arms use the same geometry – just opposite rotation */
+.hamburger-menu.active span:nth-child(1),
+.hamburger-menu.active span:nth-child(3) {
+    width: 16px;   /* keeps the cross fully inside the square */
+    height: 2px;
 }
 
+/* Top-left → bottom-right */
+.hamburger-menu.active span:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Hide the middle bar */
 .hamburger-menu.active span:nth-child(2) {
     opacity: 0;
 }
 
+/* Bottom-left → top-right */
 .hamburger-menu.active span:nth-child(3) {
-    transform: translateY(0) rotate(-45deg);
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /* Menu Overlay */
