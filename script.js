@@ -73,6 +73,15 @@ class VRBlog {
         this.loadPosts();
     }
 
+    sanitizeText(text) {
+        if (!text) return '';
+        // Replace sequences like "\n" and real newlines with a space
+        return String(text)
+            .replace(/\\n/g, ' ')
+            .replace(/\n/g, ' ')
+            .trim();
+    }
+
     checkAdminStatus() {
         if (!this.githubConfig) {
             return false;
@@ -433,8 +442,8 @@ class VRBlog {
         if (detailBody) {
             detailBody.innerHTML = `
                 <div class="post-header">
-                    <h2 class="post-title">${post.title}</h2>
-                    <p class="post-date">Published on ${post.date}</p>
+                    <h2 class="post-title">${this.sanitizeText(post.title)}</h2>
+                    <p class="post-date">Published on ${this.sanitizeText(post.date)}</p>
                     ${this.isAdminLoggedIn ? `
                         <div class="admin-post-actions">
                             <button onclick="vrBlog.editPost(${post.id})" class="edit-post-btn">Edit Post</button>
@@ -446,7 +455,7 @@ class VRBlog {
                 <div class="review-section">
                     <h3 class="section-title">The Good</h3>
                     <div class="section-content">
-                        <div class="section-text">${post.good.content}</div>
+                        <div class="section-text">${this.sanitizeText(post.good.content)}</div>
                         ${post.good.media ? `<div class="section-media">${this.renderMedia(post.good.media)}</div>` : ''}
                     </div>
                 </div>
@@ -454,7 +463,7 @@ class VRBlog {
                 <div class="review-section">
                     <h3 class="section-title">The Bad</h3>
                     <div class="section-content">
-                        <div class="section-text">${post.bad.content}</div>
+                        <div class="section-text">${this.sanitizeText(post.bad.content)}</div>
                         ${post.bad.media ? `<div class="section-media">${this.renderMedia(post.bad.media)}</div>` : ''}
                     </div>
                 </div>
@@ -462,14 +471,14 @@ class VRBlog {
                 <div class="review-section">
                     <h3 class="section-title">The Ugly</h3>
                     <div class="section-content">
-                        <div class="section-text">${post.ugly.content}</div>
+                        <div class="section-text">${this.sanitizeText(post.ugly.content)}</div>
                         ${post.ugly.media ? `<div class="section-media">${this.renderMedia(post.ugly.media)}</div>` : ''}
                     </div>
                 </div>
             `;
         }
 
-        document.getElementById('detail-title').textContent = post.title;
+        document.getElementById('detail-title').textContent = this.sanitizeText(post.title);
         this.postDetailModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
@@ -1065,14 +1074,15 @@ class VRBlog {
         
         // Truncate content for preview
         const truncateText = (text, maxLength = 150) => {
-            if (text.length <= maxLength) return text;
-            return text.substring(0, maxLength) + '...';
+            const sanitized = this.sanitizeText(text);
+            if (sanitized.length <= maxLength) return sanitized;
+            return sanitized.substring(0, maxLength) + '...';
         };
         
         article.innerHTML = `
             <div class="post-header">
-                <h2 class="post-title">${post.title}</h2>
-                <p class="post-date">${post.date}</p>
+                <h2 class="post-title">${this.sanitizeText(post.title)}</h2>
+                <p class="post-date">${this.sanitizeText(post.date)}</p>
                 <p class="read-more-hint">Click to read full review</p>
             </div>
             

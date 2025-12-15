@@ -1043,9 +1043,6 @@ footer {
     /* Shared layout width for nav and content */
     :root {
         --layout-width: 900px;
-        /* make the logo circle tall enough to visually match the two lines
-           "The Good, The Bad, The Ugly" + "VR/MR Experience Reviews" */
-        --logo-size: 3.2rem;
     }
 
     /* Navbar and main content aligned on the same vertical line */
@@ -1083,11 +1080,11 @@ footer {
         max-width: 38rem;
     }
 
-    /* Logo block: keep text and circle aligned on the same baseline */
+    /* Keep logo + text on same baseline */
     .logo {
         display: flex;
         align-items: center;
-        gap: 1.25rem;
+        gap: 1rem;
     }
 
     .logo-text {
@@ -1109,65 +1106,16 @@ footer {
         margin-top: 0.25rem;
     }
 
-    /* Circle logo on desktop:
-       – outer circle matches roughly the height of the two text lines
-       – inner circle perfectly centered */
+    /* ⬇️ IMPORTANT: use the SAME logo style as mobile, just scaled up */
     .theme-toggle {
-        width: var(--logo-size);
-        height: var(--logo-size);
+        /* same border, same circle, just bigger */
+        width: 3rem;
+        height: 3rem;
+        font-size: 2rem;   /* scales the inner circle/emoji */
         border-radius: 50%;
-        border: 2px solid var(--text-color);
-        position: relative;
-        font-size: 0;          /* hide any text like ● */
+        border: 1px solid var(--border-color);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0;
-    }
-
-    .theme-toggle::before {
-        content: '';
-        position: absolute;
-        width: calc(var(--logo-size) * 0.45);
-        height: calc(var(--logo-size) * 0.45);
-        border-radius: 50%;
-        border: 2px solid var(--text-color);
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    /* Make sure any span inside isn't adding extra glyphs */
-    .theme-toggle .theme-icon {
-        font-size: 0;
-    }
-
-    /* Hamburger icon: equal line weight and symmetric X on PC */
-    .hamburger-menu {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        padding: 8px;
-    }
-
-    .hamburger-menu span {
-        width: 20px;
-        height: 2px;
-        border-radius: 999px;
-        background-color: var(--text-color);
-        transition: transform 0.25s ease, opacity 0.25s ease;
-        transform-origin: center;
-    }
-
-    .hamburger-menu.active span:nth-child(1) {
-        transform: translateY(5px) rotate(45deg);
-    }
-
-    .hamburger-menu.active span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .hamburger-menu.active span:nth-child(3) {
-        transform: translateY(-5px) rotate(-45deg);
     }
 }
