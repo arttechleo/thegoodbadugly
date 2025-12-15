@@ -165,10 +165,13 @@ body {
     font-size: 0;
 }
 
-/* inner circle (light theme: black dot in light ring) */
+/* inner circle – perfectly centered in the outer circle */
 .theme-toggle::before {
     content: "";
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 58%;
     height: 58%;
     border-radius: 50%;
@@ -1121,18 +1124,6 @@ footer {
     .tagline {
         font-size: 1rem;
         margin-top: 0.25rem;
-    }
-
-    /* PC logo: EXACT same drawing as mobile, only larger */
-    .theme-toggle {
-        width: 2.6rem;     /* adjust between 2.4–2.8rem if needed */
-        height: 2.6rem;
-        font-size: 2.2rem; /* slightly smaller than box so inner circle is centered with even padding */
-        padding: 0;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     /* Hamburger icon: equal line weight and symmetric X on PC */
