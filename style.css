@@ -1126,37 +1126,9 @@ footer {
         margin-top: 0.25rem;
     }
 
-    /* Hamburger icon: equal line weight and symmetric X on PC */
-    .hamburger-menu {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .hamburger-menu span {
-        width: 20px;
-        height: 2px;
-        border-radius: 999px;
-        background-color: var(--text-color);
-        transition: transform 0.25s ease, opacity 0.25s ease;
-        transform-origin: center;
-    }
-
-    .hamburger-menu.active span:nth-child(1) {
-        transform: translateY(5px) rotate(45deg);
-    }
-
-    .hamburger-menu.active span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .hamburger-menu.active span:nth-child(3) {
-        transform: translateY(-5px) rotate(-45deg);
+    /* Make inner circle ~15–20% smaller on desktop */
+    .theme-toggle::before {
+        width: 48%;
+        height: 48%;
     }
 }
