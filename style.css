@@ -143,8 +143,9 @@ body {
 
 /* ==== Theme toggle logo: double circle, same on mobile & desktop ==== */
 .theme-toggle {
-    --logo-size: 2.7rem; /* desktop default, mobile overrides later */
-
+    /* Desktop default size */
+    --logo-size: 54px; /* slightly larger than mobile, but constant */
+    
     position: relative;
     width: var(--logo-size);
     height: var(--logo-size);
@@ -165,20 +166,20 @@ body {
     font-size: 0;
 }
 
-/* inner circle – perfectly centered in the outer circle */
+/* inner circle – same proportion on desktop & mobile, always centered */
 .theme-toggle::before {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 58%;
+    width: 58%;     /* SAME proportion as mobile */
     height: 58%;
     border-radius: 50%;
     background-color: var(--text-color);
 }
 
-/* dark theme: dark outer ring, white hollow inner ring */
+/* dark theme: outer ring dark, inner ring hollow white circle */
 [data-theme="dark"] .theme-toggle {
     border-color: #333333;
     background-color: #000000;
@@ -222,9 +223,9 @@ body {
     background-color: var(--hover-bg);
 }
 
-/* Active: perfectly symmetric X, no scaling (only translation + rotation) */
+/* Active: perfectly symmetric X - lines overlap at center with no translation, only rotation */
 .hamburger-menu.active span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: translateY(0) rotate(45deg);
 }
 
 .hamburger-menu.active span:nth-child(2) {
@@ -232,7 +233,7 @@ body {
 }
 
 .hamburger-menu.active span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: translateY(0) rotate(-45deg);
 }
 
 /* Menu Overlay */
@@ -770,10 +771,10 @@ footer {
     }
 
     .theme-toggle {
-        --logo-size: 44px;
+        --logo-size: 44px;   /* same as your mobile version */
         width: var(--logo-size);
         height: var(--logo-size);
-        border-width: 1px; /* thinner ring on mobile like before */
+        border-width: 1px;   /* like before on mobile */
     }
 
     .hamburger-menu {
@@ -1126,9 +1127,4 @@ footer {
         margin-top: 0.25rem;
     }
 
-    /* Make inner circle ~15–20% smaller on desktop */
-    .theme-toggle::before {
-        width: 48%;
-        height: 48%;
-    }
 }

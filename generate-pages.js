@@ -101,7 +101,9 @@ function updateIndexPage(reviews) {
     
     // Insert before closing body tag if not already present
     if (!indexContent.includes('// Override click behavior')) {
-        indexContent = indexContent.replace('</body>', scriptToAdd + '\\n</body>');
+        // BUG FIX: Changed '\\n' (literal backslash+n string) to '\n' (actual newline character)
+        // The literal '\\n' was being rendered as visible text in the HTML
+        indexContent = indexContent.replace('</body>', scriptToAdd + '\n</body>');
         fs.writeFileSync(indexPath, indexContent);
         console.log('Updated index.html with navigation links');
     }
