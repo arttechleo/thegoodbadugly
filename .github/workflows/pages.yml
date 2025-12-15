@@ -29,12 +29,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # ⚠️ cache removed to avoid lockfile error
 
       - name: Install dependencies (if any)
         run: |
           if [ -f package.json ]; then
-            npm ci || echo "No dependencies to install"
+            npm install || echo "No dependencies to install"
           fi
 
       - name: Generate static pages
