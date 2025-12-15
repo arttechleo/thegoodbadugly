@@ -1106,16 +1106,10 @@ footer {
         margin-top: 0.25rem;
     }
 
-    /* ⬇️ IMPORTANT: use the SAME logo style as mobile, just scaled up */
+    /* PC logo: EXACT same drawing as mobile, only bigger */
     .theme-toggle {
-        /* same border, same circle, just bigger */
-        width: 3rem;
-        height: 3rem;
-        font-size: 2rem;   /* scales the inner circle/emoji */
-        border-radius: 50%;
-        border: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 2.6rem;       /* tweak 2.4–2.8 until it visually matches title+subtitle */
+        height: 2.6rem;
+        font-size: 2.6rem;
     }
 }
